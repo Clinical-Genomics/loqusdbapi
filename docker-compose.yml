@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  loqusdbapi:
+    build: .
+    ports:
+      - 9000:80
+    links:
+      - mongo:mongo
+    environment:
+      URI: mongodb://mongo:27017/loqusdb
+      MODULE_NAME: "loqusdbapi.main"
+
+  mongo:
+    image: mongo
+
+  restore:
+    image: mongo
+    volumes:
+      - ./dump:/var/dump
+    links:
+      - mongo:mongo
+    command: mongorestore --host mongo:27017 -d loqusdb /var/dump/

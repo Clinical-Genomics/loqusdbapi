@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"cluster_id":{"$numberInt":"1"}},"name":"cluster"},{"v":{"$numberInt":"2"},"key":{"variant_id":{"$numberInt":"1"}},"name":"variant"}],"uuid":"60e83361ee79492ba914df4e968d1ac1","collectionName":"identity"}
