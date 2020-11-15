@@ -8,10 +8,21 @@ Currently only supports get requests for **variant**, **structural_variant** and
 
 ## Running local installation
 
-### poetry
+For all of the use cases below, do 
 
 1. `git clone https://github.com/Clinical-Genomics/loqusdbapi`
 1. `cd loqusdbapi`
+
+For all these examples you need to make sure that mongodb is running.
+If `mongod` is listening to another port than `27017`, if it is on another server than localhost, if it needs password 
+etc, use the environmental variable `URI`. 
+If only testing the app use the `docker-compose`-solution below.
+More information about setup should be fairly easy to understand by looking at `docker-compose.yml`.
+
+### poetry
+
+[Poetry][poetry] is the friendliest and most intuitive package manager for python.
+
 1. `poetry install`
 1. `uvicorn loqusdbapi.main:app --reload`
 
@@ -38,6 +49,6 @@ Head over to `http://127.0.0.1:8000/docs`
 1. Port `80` is mapped to `9000` in the docker compose file so go to `http://127.0.0.1:9000/docs`
 1. Fetch a variant with `curl -X GET "http://127.0.0.1:9000/variants/1_880086_T_C" -H  "accept: application/json"`
 
-
+[poetry]: https://python-poetry.org
 [loqusdb]: https://github.com/moonso/loqusdb
 [micropipenv]: https://github.com/thoth-station/micropipenv
