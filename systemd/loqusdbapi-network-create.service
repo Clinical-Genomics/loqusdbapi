@@ -9,7 +9,12 @@ Environment=PODMAN_SYSTEMD_UNIT=%n
 #StateDirectoryMode=0700
 
 ConditionPathExists=!%S/cni/net.d/loqusdbapi_net.conflist
-ExecStart=/usr/bin/podman network create loqusdbapi_net
+ExecStart=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --network-cmd-path=%h/bin/slirp4netns
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               network create loqusdbapi_net
 
 KillMode=none
 Type=oneshot

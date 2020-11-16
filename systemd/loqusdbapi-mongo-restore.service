@@ -14,12 +14,13 @@ StateDirectoryMode=0700
 ExecStartPre=rm -f %t/loqusdbapi-mongo-restore.pid %t/loqusdbapi-mongo-restore.ctr-id
 ExecStart=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
+                               --network-cmd-path=%h/bin/slirp4netns
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                run \
                                  --cgroups=no-conmon \
-                                 --cidfile %t/loqusdbapi-mongo.ctr-id \
-                                 --conmon-pidfile %t/loqusdbapi-mongo.pid \
+                                 --cidfile %t/loqusdbapi-mongo-restore.ctr-id \
+                                 --conmon-pidfile %t/loqusdbapi-mongo-restore.pid \
                                  --env URI=mongodb://mongo.dns.podman:27017/loqusdb
                                  --name loqusdbapi-mongo \
                                  --network loqusdbapi_net \

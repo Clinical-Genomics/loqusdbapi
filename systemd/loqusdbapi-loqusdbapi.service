@@ -13,6 +13,7 @@ StateDirectoryMode=0700
 ExecStartPre=rm -f %t/loqusdbapi-loqusdbapi.pid %t/loqusdbapi-loqusdbapi.ctr-id
 ExecStart=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
+                               --network-cmd-path=%h/bin/slirp4netns
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                run \
