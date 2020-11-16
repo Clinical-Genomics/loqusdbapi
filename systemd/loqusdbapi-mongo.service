@@ -13,7 +13,7 @@ ExecStartPre=rm -f %t/loqusdbapi-mongo.pid %t/loqusdbapi-mongo.ctr-id
 ExecStartPre=mkdir -p %S/loqusdbapi-mongo/data
 ExecStart=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
-                               --network-cmd-path=%h/bin/slirp4netns
+                               --network-cmd-path=%h/bin/slirp4netns \
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                run \
@@ -40,7 +40,7 @@ ExecStopPost=%h/podman/bin/podman \
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                rm \
-                                 --cidfile %t/loqusdbapi-mongo.ctr-id
+                                 --cidfile %t/loqusdbapi-mongo.ctr-id \
                                  --force \
                                  --ignore \
 PIDFile=%t/loqusdbapi-mongo.pid

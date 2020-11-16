@@ -2,16 +2,15 @@
 Description=service loqusdbapi-network-create.service
 Wants=network.target
 After=network-online.target
+ConditionPathExists=!%S/cni/net.d/loqusdbapi_net.conflist
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
 #StateDirectory=
 #StateDirectoryMode=0700
-
-ConditionPathExists=!%S/cni/net.d/loqusdbapi_net.conflist
 ExecStart=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
-                               --network-cmd-path=%h/bin/slirp4netns
+                               --network-cmd-path=%h/bin/slirp4netns \
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                network create loqusdbapi_net

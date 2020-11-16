@@ -13,7 +13,7 @@ StateDirectoryMode=0700
 ExecStartPre=rm -f %t/loqusdbapi-loqusdbapi.pid %t/loqusdbapi-loqusdbapi.ctr-id
 ExecStart=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
-                               --network-cmd-path=%h/bin/slirp4netns
+                               --network-cmd-path=%h/bin/slirp4netns \
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                run \
@@ -21,11 +21,11 @@ ExecStart=%h/podman/bin/podman \
                                  --cidfile %t/loqusdbapi-loqusdbapi.ctr-id \
                                  --conmon-pidfile %t/loqusdbapi-loqusdbapi.pid \
                                  --detach \
+                                 --env URI=mongodb://mongo.dns.podman:27017/loqusdb \
                                  --name loqusdbapi-loqusdbapi \
                                  --network loqusdbapi_net \
                                  --replace \
                                  --security-opt label=disable \
-                                 --env URI=mongodb://mongo.dns.podman:27017/loqusdb
                                  localhost/loqusdbapi
 ExecStop=%h/podman/bin/podman \
                                --conmon=%h/bin/conmon \
@@ -40,7 +40,7 @@ ExecStopPost=%h/podman/bin/podman \
                                --runtime=%h/bin/crun \
                                --storage-driver vfs \
                                rm \
-                                 --cidfile %t/loqusdbapi-loqusdbapi.ctr-id
+                                 --cidfile %t/loqusdbapi-loqusdbapi.ctr-id \
                                  --force \
                                  --ignore \
 PIDFile=%t/loqusdbapi-loqusdbapi.pid
