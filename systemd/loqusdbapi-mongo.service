@@ -1,0 +1,50 @@
+[Unit]
+Description=The service loqusdbapi-mongo.service
+Wants=network.target
+After=network-online.target loqusdbapi-network-create.service
+Requires=loqusdbapi-network-create.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+StateDirectory=loqusdbapi-mongo
+StateDirectoryMode=0700
+ExecStartPre=rm -f %t/loqusdbapi-mongo.pid %t/loqusdbapi-mongo.ctr-id
+ExecStartPre=mkdir -p %S/loqusdbapi-mongo/data
+ExecStart=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               run \
+                                 --cgroups=no-conmon \
+                                 --cidfile %t/loqusdbapi-mongo.ctr-id \
+                                 --conmon-pidfile %t/loqusdbapi-mongo.pid \
+                                 --detach \
+                                 --name loqusdbapi-mongo \
+                                 --network loqusdbapi_net \
+                                 --replace \
+                                 --security-opt label=disable \
+                                 --volume=%S/loqusdbapi-mongo/data:/data/db:Z \
+                                 docker.io/library/mongo
+ExecStop=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%s/bin/crun \
+                               --storage-driver vfs \
+                               stop \
+                                 --cidfile %t/loqusdbapi-mongo.ctr-id \
+                                 --ignore \
+                                 --time 10
+ExecStopPost=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               rm \
+                                 --cidfile %t/loqusdbapi-mongo.ctr-id
+                                 --force \
+                                 --ignore \
+PIDFile=%t/loqusdbapi-mongo.pid
+KillMode=none
+Type=forking
+
+[Install]
+WantedBy=multi-user.target default.target

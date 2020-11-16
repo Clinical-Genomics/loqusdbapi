@@ -1,0 +1,18 @@
+[Unit]
+Description=service loqusdbapi-network-create.service
+Wants=network.target
+After=network-online.target
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+#StateDirectory=
+#StateDirectoryMode=0700
+
+ConditionPathExists=!%S/cni/net.d/loqusdbapi_net.conflist
+ExecStart=/usr/bin/podman network create loqusdbapi_net
+
+KillMode=none
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target default.target

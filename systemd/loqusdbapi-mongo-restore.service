@@ -1,0 +1,40 @@
+[Unit]
+Description=The service loqusdbapi-mongo-restore.service
+Wants=network.target
+After=network-online.target
+After=loqusdbapi-network-create.service loqusdbapi-mongo.service
+Requires=loqusdbapi-network-create.service loqusdbapi-mongo.service
+
+ConditionPathExists=!%S/loqusdbapi-mongo-restore/mongo_restore_has_run
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+StateDirectory=loqusdbapi-mongo-restore
+StateDirectoryMode=0700
+ExecStartPre=rm -f %t/loqusdbapi-mongo-restore.pid %t/loqusdbapi-mongo-restore.ctr-id
+ExecStart=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               run \
+                                 --cgroups=no-conmon \
+                                 --cidfile %t/loqusdbapi-mongo.ctr-id \
+                                 --conmon-pidfile %t/loqusdbapi-mongo.pid \
+                                 --env URI=mongodb://mongo.dns.podman:27017/loqusdb
+                                 --name loqusdbapi-mongo \
+                                 --network loqusdbapi_net \
+                                 --replace \
+                                 --rm \                                 
+                                 --security-opt label=disable \
+                                 --volume=%h/dump:/var/dump \
+                                 docker.io/library/mongo mongo-restore
+ExecStartPost=/bin/touch %S/loqusdbapi-mongo-restore/mongo_restore_has_run
+KillMode=none
+Type=oneshot
+RemainAfterExit=yes
+# Pulling the container docker.io/library/mongo from Dockerhub may take a while as its size is about 700 Mb
+# Let's increase the TimeoutStartSec value
+TimeoutStartSec=300s
+
+[Install]
+WantedBy=multi-user.target default.target

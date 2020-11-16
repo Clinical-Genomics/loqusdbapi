@@ -1,0 +1,50 @@
+[Unit]
+Description=The service loqusdbapi-loqusdbapi.service
+Wants=network.target
+After=network-online.target
+After=loqusdbapi-network-create.service loqusdbapi-mongo.service loqusdbapi-mongo-restore.service
+Requires=loqusdbapi-network-create.service loqusdbapi-mongo.service loqusdbapi-mongo-restore.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+StateDirectory=loqusdbapi-loqusdbapi
+StateDirectoryMode=0700
+ExecStartPre=rm -f %t/loqusdbapi-loqusdbapi.pid %t/loqusdbapi-loqusdbapi.ctr-id
+ExecStart=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               run \
+                                 --cgroups=no-conmon \
+                                 --cidfile %t/loqusdbapi-loqusdbapi.ctr-id \
+                                 --conmon-pidfile %t/loqusdbapi-loqusdbapi.pid \
+                                 --detach \
+                                 --name loqusdbapi-loqusdbapi \
+                                 --network loqusdbapi_net \
+                                 --replace \
+                                 --security-opt label=disable \
+                                 --env URI=mongodb://mongo.dns.podman:27017/loqusdb
+                                 localhost/loqusdbapi
+ExecStop=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%s/bin/crun \
+                               --storage-driver vfs \
+                               stop \
+                                 --cidfile %t/loqusdbapi-loqusdbapi.ctr-id \
+                                 --ignore \
+                                 --time 10
+ExecStopPost=%h/podman/bin/podman \
+                               --conmon=%h/bin/conmon \
+                               --runtime=%h/bin/crun \
+                               --storage-driver vfs \
+                               rm \
+                                 --cidfile %t/loqusdbapi-loqusdbapi.ctr-id
+                                 --force \
+                                 --ignore \
+PIDFile=%t/loqusdbapi-loqusdbapi.pid
+KillMode=none
+Type=forking
+
+[Install]
+WantedBy=multi-user.target default.target
