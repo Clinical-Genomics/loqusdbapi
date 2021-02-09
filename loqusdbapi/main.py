@@ -51,6 +51,11 @@ class StructuralVariant(BaseVariant):
     pos_right: int
 
 
+class Cases(BaseModel):
+    nr_cases_snvs: Optional[int]
+    nr_cases_svs: Optional[int]
+
+
 class Case(BaseModel):
     case_id: str
     nr_variants: Optional[int]
@@ -74,7 +79,10 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the loqusdbapi", "loqusdb_version": loqusdb.__version__}
+    return {
+        "message": "Welcome to the loqusdbapi",
+        "loqusdb_version": loqusdb.__version__,
+    }
 
 
 @app.get("/variants/{variant_id}", response_model=Variant)
@@ -111,6 +119,17 @@ def read_sv(
     structural_variant["nr_cases"] = db.nr_cases(snv_cases=False, sv_cases=True)
 
     return structural_variant
+
+
+@app.get("/cases", response_model=Cases)
+def read_cases(db: MongoAdapter = Depends(database)):
+    nr_cases_snvs = db.nr_cases(snv_cases=True, sv_cases=False)
+    nr_cases_svs = db.nr_cases(snv_cases=False, sv_cases=True)
+
+    return dict(
+        nr_cases_snvs=nr_cases_snvs,
+        nr_cases_svs=nr_cases_svs,
+    )
 
 
 @app.get("/cases/{case_id}", response_model=Case)
