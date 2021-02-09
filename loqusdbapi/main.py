@@ -9,6 +9,7 @@ from typing import Optional, List
 from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel, BaseSettings
 
+import loqusdb
 from loqusdb.plugins.mongo import MongoAdapter
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
@@ -16,7 +17,7 @@ from mongo_adapter.exceptions import Error as DB_Error
 
 class Settings(BaseSettings):
     uri: str = "mongodb://localhost:27017/loqusdb"
-    db_name: str = 'loqusdb'
+    db_name: str = "loqusdb"
 
 
 settings = Settings()
@@ -64,34 +65,47 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
             uri=uri,
         )
     except DB_Error:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Could not connect to database")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Could not connect to database"
+        )
 
     return MongoAdapter(client, db_name=db_name)
 
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the loqusdbapi"}
+    return {"message": "Welcome to the loqusdbapi", "loqus_version": loqusdb.__version__}
 
 
 @app.get("/variants/{variant_id}", response_model=Variant)
 def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
     variant = db.get_variant({"_id": variant_id})
     if not variant:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found"
+        )
     variant["nr_cases"] = db.nr_cases(snv_cases=True, sv_cases=False)
     return variant
 
 
 @app.get("/svs/", response_model=StructuralVariant)
-def read_sv(chrom: str, pos: int, end: int, sv_type: str, db: MongoAdapter = Depends(database), end_chrom: str = None):
-    structural_variant = db.get_structural_variant({
-        'chrom': chrom,
-        'end_chrom': end_chrom or chrom,
-        'sv_type': sv_type,
-        'pos': pos,
-        'end': end
-    })
+def read_sv(
+    chrom: str,
+    pos: int,
+    end: int,
+    sv_type: str,
+    db: MongoAdapter = Depends(database),
+    end_chrom: str = None,
+):
+    structural_variant = db.get_structural_variant(
+        {
+            "chrom": chrom,
+            "end_chrom": end_chrom or chrom,
+            "sv_type": sv_type,
+            "pos": pos,
+            "end": end,
+        }
+    )
     if not structural_variant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found")
     structural_variant["nr_cases"] = db.nr_cases(snv_cases=False, sv_cases=True)
@@ -103,5 +117,7 @@ def read_sv(chrom: str, pos: int, end: int, sv_type: str, db: MongoAdapter = Dep
 def read_case(case_id: str, db: MongoAdapter = Depends(database)):
     case = db.case({"case_id": case_id})
     if not case:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Case {case_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Case {case_id} not found"
+        )
     return case
