@@ -74,7 +74,7 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the loqusdbapi", "loqus_version": loqusdb.__version__}
+    return {"message": "Welcome to the loqusdbapi", "loqusdb_version": loqusdb.__version__}
 
 
 @app.get("/variants/{variant_id}", response_model=Variant)
