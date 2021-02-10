@@ -2,20 +2,20 @@
 
 Small REST api to use with [loqusdb][loqusdb].
 
-Currently only supports get requests for **variant**, **structural_variant** and **case**.
+Currently only supports get requests for **variant**, **structural_variant**, **case** and **cases**.
 
 # Usage
 
 ## Running local installation
 
-For all of the use cases below, do 
+For all of the use cases below, do
 
 1. `git clone https://github.com/Clinical-Genomics/loqusdbapi`
 1. `cd loqusdbapi`
 
 For all these examples you need to make sure that mongodb is running.
-If `mongod` is listening to another port than `27017`, if it is on another server than localhost, if it needs password 
-etc, use the environmental variable `URI`. 
+If `mongod` is listening to another port than `27017`, if it is on another server than localhost, if it needs password
+etc, use the environmental variable `URI`.
 If only testing the app use the `docker-compose`-solution below.
 More information about setup should be fairly easy to understand by looking at `docker-compose.yml`.
 
