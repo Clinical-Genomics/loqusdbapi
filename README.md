@@ -47,7 +47,10 @@ Head over to `http://127.0.0.1:8000/docs`
 
 1. `docker-compose up`
 1. Port `80` is mapped to `9000` in the docker compose file so go to `http://127.0.0.1:9000/docs`
-1. Fetch a variant with `curl -X GET "http://127.0.0.1:9000/variants/1_880086_T_C" -H  "accept: application/json"`
+1. Request example to fetch a single-nucleotide (SNV) variant: `curl -X GET "http://127.0.0.1:9000/variants/1_880086_T_C"`
+1. Request example to fetch a structural variant (SV): `curl -X GET "http://127.0.0.1:9000/svs/?chrom=1&end_chrom=1&pos=7889972&end=7890026&sv_type=DEL"`
+1. Request example to get the number of cases with either SNVs or SVs present in database:
+`curl -X GET "http://127.0.0.1:9000/cases"`
 
 [poetry]: https://python-poetry.org
 [loqusdb]: https://github.com/moonso/loqusdb
