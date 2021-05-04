@@ -4,15 +4,14 @@ Small loqusdb api
 
 """
 
-from typing import Optional, List
-
-from fastapi import FastAPI, HTTPException, status, Depends
-from pydantic import BaseModel, BaseSettings
+from typing import List, Optional
 
 import loqusdb
+from fastapi import Depends, FastAPI, HTTPException, status
 from loqusdb.plugins.mongo import MongoAdapter
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
+from pydantic import BaseModel, BaseSettings
 
 
 class Settings(BaseSettings):
@@ -28,7 +27,7 @@ class BaseVariant(BaseModel):
     chrom: str
     observations: int
     families: List[str] = []
-    nr_cases: int
+    total: int
 
 
 class Variant(BaseVariant):
@@ -92,7 +91,7 @@ def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found"
         )
-    variant["nr_cases"] = db.nr_cases(snv_cases=True, sv_cases=False)
+    variant["total"] = db.nr_cases(snv_cases=True, sv_cases=False)
     return variant
 
 
@@ -116,7 +115,7 @@ def read_sv(
     )
     if not structural_variant:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Variant not found")
-    structural_variant["nr_cases"] = db.nr_cases(snv_cases=False, sv_cases=True)
+    structural_variant["total"] = db.nr_cases(snv_cases=False, sv_cases=True)
 
     return structural_variant
 
