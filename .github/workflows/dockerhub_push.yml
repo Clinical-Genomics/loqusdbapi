@@ -1,4 +1,4 @@
-name: Push loqusdbapi mage to Docker Hub
+name: Push loqusdbapi image to Docker Hub
 
 on:
   pull_request:
