@@ -1,11 +1,10 @@
-name: Push loqusdbapi image to Docker Hub
+name: Push loqusdbapi image to Docker Hub on push event
 
 on:
   on: [push]
 
 jobs:
   docker-image-push:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
      - name: Check out git repository
