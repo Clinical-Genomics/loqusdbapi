@@ -1,6 +1,6 @@
 name: Push loqusdbapi image to Docker Hub on push event
-on:
-  on: [push]
+
+on: [push]
 
 jobs:
   docker-image-push:
