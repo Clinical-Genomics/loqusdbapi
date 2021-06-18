@@ -1,5 +1,4 @@
 name: Push to Docker Hub on new release event
-
 on:
  release:
   types:
