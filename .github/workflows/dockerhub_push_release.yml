@@ -1,0 +1,22 @@
+name: Push to Docker Hub on new release event
+
+on:
+ release:
+  types:
+   - created
+
+jobs:
+  docker-image-release_push:
+    # Push to Docker Hub when a new release is created
+    runs-on: ubuntu-latest
+    steps:
+     - name: Check out git repository
+       uses: actions/checkout@v2
+
+     - name: Build and publish to Docker Hub
+       uses: elgohr/Publish-Docker-Github-Action@master
+       with:
+         name: clinicalgenomics/loqusdbapi
+         username: ${{ secrets.DOCKER_USERNAME }}
+         password: ${{ secrets.DOCKER_PASSWORD }}
+         tags: "latest,${{ github.event.release.tag_name }}"
