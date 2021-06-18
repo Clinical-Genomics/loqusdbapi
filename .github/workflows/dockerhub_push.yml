@@ -10,7 +10,7 @@ jobs:
      - name: Check out git repository
        uses: actions/checkout@v2
 
-    - name: Extract branch name and remove illegal chars
+     - name: Extract branch name and remove illegal chars
         id: get_branch_name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo "$(tr "/" "-" <<<${GITHUB_REF#refs/heads/})")"
