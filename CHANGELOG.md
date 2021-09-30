@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## []
+### Changed
+- Use MongoDB v. 4.4.9 in docker-compose file
+
 ## [1.0]
 ### Added
 - `/` endpoint is returning loqusdb version in use for this app
