@@ -15,7 +15,7 @@ services:
     image: mongo
 
   restore:
-    image: mongo:4.4.9
+    image: mongo
     volumes:
       - ./dump:/var/dump
     links:
