@@ -11,6 +11,8 @@ ENV DB_NAME="loqusdb"
 WORKDIR /home/app
 COPY . /home/app
 
+RUN sudo apt update
+RUN sudo apt install build-essential
 RUN pip install numpy cython -r requirements.txt
 RUN pip install -e .
 
