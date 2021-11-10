@@ -11,6 +11,9 @@ pydantic = "^1.7.2"
 uvicorn = "^0.12.2"
 loqusdb = "^2.5"
 python-dotenv = "^0.19.1"
+numpy = "1.19.4"
+Cython = "0.29.24"
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

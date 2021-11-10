@@ -30,7 +30,7 @@ More information about setup should be fairly easy to understand by looking at `
 To use with `pip` the easy solution is to install [micropipenv][micropipenv] and generate a requirements file:
 
 1. `pip install micropipenv[toml]`
-1. `micropipenv requirements --method poetry > requirements.txt`
+1. `micropipenv requirements --method poetry --no-hashes > requirements.txt`
 1. `pip install -r requirements.txt`
 1. `uvicorn loqusdbapi.main:app --reload`
 
