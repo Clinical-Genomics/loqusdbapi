@@ -13,7 +13,9 @@ COPY . /home/app
 
 RUN apt-get -y update
 RUN apt-get -y install build-essential
-RUN pip install numpy cython -r requirements.txt
+RUN pip install numpy Cython
+RUN pip install --no-binary cyvcf2 --no-cache-dir cyvcf2
+RUN pip install -r requirements.txt
 RUN pip install -e .
 
 
