@@ -4,13 +4,14 @@
 atomicwrites==1.4.0; (sys_platform == "win32")
 attrs==20.3.0
 click==7.1.2
-colorama==0.4.4; (sys_platform == "win32")
+colorama==0.4.4; (sys_platform == "win32") or (sys_platform == "win32" and extra == "standard")
 coloredlogs==14.0
 cython==0.29.24
 cyvcf2==0.9.0
 fastapi==0.61.2
 gunicorn==20.1.0
 h11==0.11.0
+httptools==0.1.2; (sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and extra == "standard")
 humanfriendly==8.2
 loqusdb==2.5
 mongo-adapter==0.3
@@ -31,6 +32,9 @@ pyyaml==5.3.1
 sentinels==1.0.0
 six==1.15.0
 starlette==0.13.6
-uvicorn==0.12.2
+uvicorn[standard]==0.12.3
+uvloop==0.16.0; (sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and extra == "standard")
 vcftoolbox==1.5
+watchgod==0.6; (extra == "standard")
 wcwidth==0.2.5
+websockets==8.1; (extra == "standard")

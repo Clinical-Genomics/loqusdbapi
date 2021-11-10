@@ -8,7 +8,7 @@ authors = ["Måns Magnusson <mans.magnusson@scilifelab.se>"]
 python = "^3.8"
 fastapi = "^0.61.2"
 pydantic = "^1.7.2"
-uvicorn = "^0.12.2"
+uvicorn = {extras = ["standard"], version = "^0.12.0"}
 loqusdb = "^2.5"
 python-dotenv = "^0.19.1"
 numpy = "1.19.4"
