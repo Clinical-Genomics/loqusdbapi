@@ -15,9 +15,7 @@ RUN apt-get -y update
 RUN apt-get -y install build-essential python3-dev openssl autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev samtools
 
 RUN pip install --upgrade pip
-RUN pip install numpy Cython
-RUN pip install --no-binary cyvcf2 --no-cache-dir cyvcf2
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-cache-dir
 
 
 CMD gunicorn \
