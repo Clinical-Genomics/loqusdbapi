@@ -12,7 +12,7 @@ WORKDIR /home/app
 COPY . /home/app
 
 RUN apt-get -y update
-RUN apt-get -y install build-essential
+RUN apt-get -y install build-essential python3-dev openssl
 RUN pip install numpy Cython
 RUN pip install --no-binary cyvcf2 --no-cache-dir cyvcf2
 RUN pip install -r requirements.txt
