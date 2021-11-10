@@ -11,7 +11,7 @@ ENV DB_NAME="loqusdb"
 WORKDIR /home/app
 COPY . /home/app
 
-RUN pip install -r requirements.txt
+RUN pip install numpy cython -r requirements.txt
 RUN pip install -e .
 
 
