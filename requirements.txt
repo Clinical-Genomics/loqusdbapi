@@ -1,0 +1,40 @@
+#
+# Default dependencies
+#
+atomicwrites==1.4.0; (sys_platform == "win32")
+attrs==20.3.0
+click==7.1.2
+colorama==0.4.4; (sys_platform == "win32") or (sys_platform == "win32" and extra == "standard")
+coloredlogs==14.0
+cython==0.29.24
+cyvcf2==0.9.0
+fastapi==0.61.2
+gunicorn==20.1.0
+h11==0.11.0
+httptools==0.1.2; (sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and extra == "standard")
+humanfriendly==8.2
+loqusdb==2.5
+mongo-adapter==0.3
+mongomock==3.18.0
+more-itertools==8.6.0
+numpy==1.19.4
+packaging==20.4
+ped-parser==1.6.6
+pluggy==0.13.1
+py==1.9.0
+pydantic==1.7.2
+pymongo==3.7.1
+pyparsing==2.4.7
+pyreadline==2.1; (sys_platform == "win32")
+pytest==5.4.3
+python-dotenv==0.19.1
+pyyaml==5.3.1
+sentinels==1.0.0
+six==1.15.0
+starlette==0.13.6
+uvicorn[standard]==0.12.3
+uvloop==0.16.0; (sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and extra == "standard")
+vcftoolbox==1.5
+watchgod==0.6; (extra == "standard")
+wcwidth==0.2.5
+websockets==8.1; (extra == "standard")

@@ -1,16 +1,33 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
+FROM python:3.8-slim
 
-RUN pip install -U pip
+ENV GUNICORN_WORKERS=1
+ENV GUNICORN_THREADS=1
+ENV GUNICORN_BIND="0.0.0.0:8000"
+ENV GUNICORN_TIMEOUT=400
+ENV URI="mongodb://localhost:27017/loqusdb"
+ENV DB_NAME="loqusdb"
 
 
-RUN pip install micropipenv[toml] numpy cython
+WORKDIR /home/app
+COPY . /home/app
 
-# Copy the lockfile to temporary directory. This will be deleted
-COPY ./pyproject.toml ./poetry.lock /app/
-# Generate reqs with locked dependencies for deterministic build
-RUN cd /app && micropipenv requirements --method poetry > requirements.txt
-# Install deps
-RUN pip install -r /app/requirements.txt
+RUN apt-get -y update
+RUN apt-get -y install build-essential python3-dev openssl autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev samtools
 
-# Copy package
-COPY . /app
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt --no-cache-dir
+
+
+CMD gunicorn \
+    --workers=$GUNICORN_WORKERS \
+    --bind=$GUNICORN_BIND  \
+    --threads=$GUNICORN_THREADS \
+    --timeout=$GUNICORN_TIMEOUT \
+    --proxy-protocol \
+    --forwarded-allow-ips="10.0.2.100,127.0.0.1" \
+    --log-syslog \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level="debug" \
+    --worker-class=uvicorn.workers.UvicornWorker \
+    loqusdbapi.main:app
