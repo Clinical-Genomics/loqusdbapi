@@ -14,7 +14,7 @@ h11==0.11.0
 httptools==0.1.2; (sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and extra == "standard")
 humanfriendly==8.2
 loqusdb==2.5
-mongo-adapter==0.3
+mongo-adapter==0.3.3
 mongomock==3.18.0
 more-itertools==8.6.0
 numpy==1.19.4
