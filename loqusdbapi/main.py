@@ -11,6 +11,7 @@ from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
 from pydantic import BaseModel, BaseSettings
 from starlette.responses import JSONResponse
+from starlette.background import BackgroundTasks
 
 import loqusdb
 from loqusdb.plugins.mongo.adapter import MongoAdapter
@@ -146,16 +147,21 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
 
 
 @app.delete("/cases/{case_id}")
-def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
+async def delete_case(
+    background_tasks: BackgroundTasks, case_id: str, db: MongoAdapter = Depends(database)
+):
     existing_case = db.case({"case_id": case_id})
     if not existing_case:
         return JSONResponse(f"Case {case_id} does not exist", status_code=404)
-    delete_command(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
-    return JSONResponse(f"Case {case_id} deleted", status_code=200)
+    background_tasks.add_task(
+        delete_command, adapter=db, case_obj=existing_case, genome_build=settings.genome_build
+    )
+    return JSONResponse(f"Case {case_id} will be deleted", status_code=202)
 
 
 @app.post("/cases/{case_id}")
 async def load_case(
+    background_tasks: BackgroundTasks,
     case_id: str,
     snv_file: str,
     sv_file: Optional[str] = None,
@@ -165,4 +171,5 @@ async def load_case(
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=409)
 
-    pass
+    # If profile file present, check profile, then load case in background
+    # If not present, try to check profile via VCF in background, then load in background?
