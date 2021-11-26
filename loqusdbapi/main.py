@@ -13,7 +13,6 @@ from pydantic import BaseModel, BaseSettings
 from starlette.responses import JSONResponse
 from starlette.background import BackgroundTasks
 
-import loqusdb
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete as delete_command
 
@@ -152,11 +151,11 @@ async def delete_case(
 ):
     existing_case = db.case({"case_id": case_id})
     if not existing_case:
-        return JSONResponse(f"Case {case_id} does not exist", status_code=404)
+        return JSONResponse(f"Case {case_id} does not exist", status_code=status.HTTP_404_NOT_FOUND)
     background_tasks.add_task(
         delete_command, adapter=db, case_obj=existing_case, genome_build=settings.genome_build
     )
-    return JSONResponse(f"Case {case_id} will be deleted", status_code=202)
+    return JSONResponse(f"Case {case_id} will be deleted", status_code=status.HTTP_202_ACCEPTED)
 
 
 @app.post("/cases/{case_id}")
