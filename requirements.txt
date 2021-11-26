@@ -2,7 +2,7 @@ loqusdb
 pydantic
 bump2version
 fastapi
-uvicorn
+uvicorn[standard]
 uvloop
 httptools
 gunicorn
