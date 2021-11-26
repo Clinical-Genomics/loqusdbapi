@@ -6,6 +6,7 @@ ENV GUNICORN_BIND="0.0.0.0:8000"
 ENV GUNICORN_TIMEOUT=400
 ENV URI="mongodb://localhost:27017/loqusdb"
 ENV DB_NAME="loqusdb"
+ENV GENOME_BUILD="GRCh37"
 
 
 WORKDIR /home/app

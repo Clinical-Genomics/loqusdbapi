@@ -6,17 +6,21 @@ Small loqusdb api
 
 from typing import List, Optional
 
-import loqusdb
 from fastapi import Depends, FastAPI, HTTPException, status
-from loqusdb.plugins.mongo import MongoAdapter
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
 from pydantic import BaseModel, BaseSettings
+from starlette.responses import JSONResponse
+
+import loqusdb
+from loqusdb.plugins.mongo.adapter import MongoAdapter
+from loqusdb.utils.delete import delete as delete_command
 
 
 class Settings(BaseSettings):
-    uri: str = "mongodb://localhost:27017/loqusdb"
-    db_name: str = "loqusdb"
+    uri: Optional[str] = "mongodb://localhost:27017/loqusdb"
+    db_name: Optional[str] = "loqusdb"
+    genome_build: Optional[str] = "GRCh37"
 
 
 settings = Settings()
@@ -139,3 +143,26 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Case {case_id} not found"
         )
     return case
+
+
+@app.delete("/cases/{case_id}")
+def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
+    existing_case = db.case({"case_id": case_id})
+    if not existing_case:
+        return JSONResponse(f"Case {case_id} does not exist", status_code=404)
+    delete_command(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
+    return JSONResponse(f"Case {case_id} deleted", status_code=200)
+
+
+@app.post("/cases/{case_id}")
+async def load_case(
+    case_id: str,
+    snv_file: str,
+    sv_file: Optional[str] = None,
+    profile_file: Optional[str] = None,
+    db: MongoAdapter = Depends(database),
+):
+    if db.case({"case_id": case_id}):
+        return JSONResponse(f"Case {case_id} already exists", status_code=409)
+
+    pass
