@@ -168,7 +168,7 @@ async def load_case(
     db: MongoAdapter = Depends(database),
 ):
     if db.case({"case_id": case_id}):
-        return JSONResponse(f"Case {case_id} already exists", status_code=409)
+        return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
 
     # If profile file present, check profile, then load case in background
     # If not present, try to check profile via VCF in background, then load in background?
