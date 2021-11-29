@@ -1,20 +1,20 @@
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Union
 
-from pydantic import BaseModel, validator, ValidationError
+from pydantic import BaseModel, validator, ValidationError, Field
 
 
 class Case(BaseModel):
     case_id: str
-    profile_path: Path
-    vcf_path: Optional[Path]
-    vcf_sv_path: Optional[Path]
+    profile_path: Union[Path, str]
+    vcf_path: Optional[Union[Path, str]]
+    vcf_sv_path: Optional[Union[Path, str]]
     nr_variants: Optional[int] = 0
     nr_sv_variants: Optional[int] = 0
     individuals: Optional[list] = []
     sv_individuals: Optional[list] = []
-    _inds: Optional[dict] = {}
-    _sv_inds: Optional[dict] = {}
+    inds: Optional[dict] = Field(alias="_inds", default={})
+    sv_inds: Optional[dict] = Field(alias="_sv_inds", default={})
 
     @validator("vcf_path", "profile_path", "vcf_sv_path")
     def validate_path_exists(cls, value):
@@ -23,10 +23,6 @@ class Case(BaseModel):
         if Path(value).exists():
             return Path(value).absolute()
         raise ValidationError
-
-    @property
-    def sv_inds(self):
-        return self._sv_inds
 
 
 class Individual(BaseModel):

@@ -1,16 +1,16 @@
 from pathlib import Path
-from typing import Literal
+from typing import List, Union
 
 from cyvcf2 import VCF
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
-from loqusdb.utils.profiling import get_profiles
-from loqusdbapi.exceptions import VCFParserError
+from loqusdb.utils.profiling import get_profiles, compare_profiles
+from loqusdbapi.exceptions import VCFParserError, ProfileDuplicationError
 from loqusdbapi.models import Case, Individual
 from loqusdbapi.settings import settings
 
 
-def parse_snv_vcf(vcf_path: Path, case_object: Case) -> Case:
+def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
     snv_vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
     if not snv_vcf.contains("GQ"):
         raise VCFParserError(f"GQ not found in {vcf_path}")
@@ -34,7 +34,7 @@ def parse_snv_vcf(vcf_path: Path, case_object: Case) -> Case:
     return case_object
 
 
-def parse_sv_vcf(vcf_path: Path, case_object: Case) -> Case:
+def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
     sv_vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
     if not sv_vcf.contains("GQ"):
         raise VCFParserError(f"GQ not found in {vcf_path}")
@@ -60,7 +60,7 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
 
     profiles = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
     profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
-    samples = profile_vcf.samples
+    samples: List[str] = profile_vcf.samples
     for sample_index, sample in enumerate(samples):
         individual = Individual(
             ind_id=sample,
@@ -68,25 +68,61 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             ind_index=sample_index,
             profile=profiles[sample],
         )
-        case_object.sv_individuals.append(individual.dict())
-        case_object.individuals.append(individual.dict())
-        case_object._sv_inds[sample] = individual.dict()
-        case_object._inds[sample] = individual.dict()
+        if case_object.vcf_path:
+            case_object.individuals.append(individual.dict())
+            case_object.inds[sample] = individual.dict()
+        if case_object.vcf_sv_path:
+            case_object.sv_individuals.append(individual.dict())
+            case_object.sv_inds[sample] = individual.dict()
+
+    return case_object
+
+
+def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
+    for case in adapter.cases():
+
+        if case.get("individuals") is None:
+            continue
+
+        for individual in case["individuals"]:
+            if not individual.get("profile"):
+                continue
+
+            for sample in case_object.individuals:
+                similarity = compare_profiles(sample.profile, individual["profile"])
+                if similarity >= settings.load_hard_threshold:
+                    raise ProfileDuplicationError(
+                        f"Profile of sample {sample.ind_id} "
+                        f"matches existing profile {individual.get('ind_id')}"
+                    )
+
+                elif similarity >= settings.load_soft_threshold:
+                    match = f"{case['case_id']}.{individual['ind_id']}"
+                    sample.similar_samples.append(match)
 
     return case_object
 
 
 def build_case_object(
-    case_id: str, profile_path: Path, vcf_path: Path = None, vcf_sv_path: Path = None
-):
+    adapter: MongoAdapter,
+    case_id: str,
+    profile_path: Union[Path, str],
+    vcf_path: Union[Path, str] = None,
+    vcf_sv_path: Union[Path, str] = None,
+) -> Case:
 
-    case_object = Case(
-        case_id=case_id,
-        profile_path=profile_path,
+    case_object: Case = Case(
+        case_id=case_id, profile_path=profile_path, vcf_path=vcf_path, vcf_sv_path=vcf_sv_path
     )
+    case_object: Case = parse_profiles(adapter=adapter, case_object=case_object)
+    case_object: Case = check_profile_duplicates(adapter=adapter, case_object=case_object)
 
     if vcf_path:
-        case_object = parse_snv_vcf(vcf_path=vcf_path, case_object=case_object)
+        case_object: Case = parse_snv_vcf(vcf_path=vcf_path, case_object=case_object)
 
     if vcf_sv_path:
-        case_object = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
+        case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
+
+    adapter.add_case(case_object.dict(by_alias=True))
+
+    return adapter.case({"case_id": case_id})

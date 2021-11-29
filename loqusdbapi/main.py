@@ -19,6 +19,7 @@ from loqusdb.utils.profiling import get_profiles, profile_match
 from loqusdb.build_models.case import build_case
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
+from loqusdbapi.utils import build_case_object
 
 LOG = logging.getLogger("__name__")
 
@@ -130,14 +131,15 @@ async def load_case(
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
 
-    profiles = get_profiles(adapter=db, vcf_file=profile_file)
-    matches = profile_match(
+    case_result = build_case_object(
+        case_id=case_id,
+        vcf_path=snv_file,
+        vcf_sv_path=sv_file,
+        profile_path=profile_file,
         adapter=db,
-        profiles=profiles,
-        hard_threshold=settings.load_hard_threshold,
-        soft_threshold=settings.load_soft_threshold,
     )
-    LOG.info(f"Found {matches} above soft threshold")
+    background_tasks.add_task()
+    return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
 
     # If profile file present, check profile, then load case in background
     # If not present, try to check profile via VCF in background, then load in background?
