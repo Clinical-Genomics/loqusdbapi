@@ -3,7 +3,7 @@
 Small loqusdb api
 
 """
-
+import logging
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -15,54 +15,15 @@ from starlette.background import BackgroundTasks
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete as delete_command
+from loqusdb.utils.profiling import get_profiles, profile_match
+from loqusdb.build_models.case import build_case
+from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
+from loqusdbapi.settings import settings
+
+LOG = logging.getLogger("__name__")
 
 
-class Settings(BaseSettings):
-    uri: Optional[str] = "mongodb://localhost:27017/loqusdb"
-    db_name: Optional[str] = "loqusdb"
-    genome_build: Optional[str] = "GRCh37"
-
-
-settings = Settings()
 app = FastAPI()
-
-
-class BaseVariant(BaseModel):
-    chrom: str
-    observations: int
-    families: List[str] = []
-    total: int
-
-
-class Variant(BaseVariant):
-    _id: str
-    start: int
-    end: int
-    ref: str
-    alt: str
-    homozygote: int
-    hemizygote: int
-
-
-class StructuralVariant(BaseVariant):
-    end_chrom: str
-    end_left: int
-    end_right: int
-    sv_type: str
-    length: int
-    pos_left: int
-    pos_right: int
-
-
-class Cases(BaseModel):
-    nr_cases_snvs: Optional[int]
-    nr_cases_svs: Optional[int]
-
-
-class Case(BaseModel):
-    case_id: str
-    nr_variants: Optional[int]
-    nr_sv_variants: Optional[int]
 
 
 def database(uri: str = None, db_name: str = None) -> MongoAdapter:
@@ -84,7 +45,6 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 def read_root():
     return {
         "message": "Welcome to the loqusdbapi",
-        "loqusdb_version": loqusdb.__version__,
     }
 
 
@@ -163,12 +123,21 @@ async def load_case(
     background_tasks: BackgroundTasks,
     case_id: str,
     snv_file: str,
+    profile_file: str,
     sv_file: Optional[str] = None,
-    profile_file: Optional[str] = None,
     db: MongoAdapter = Depends(database),
 ):
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
+
+    profiles = get_profiles(adapter=db, vcf_file=profile_file)
+    matches = profile_match(
+        adapter=db,
+        profiles=profiles,
+        hard_threshold=settings.load_hard_threshold,
+        soft_threshold=settings.load_soft_threshold,
+    )
+    LOG.info(f"Found {matches} above soft threshold")
 
     # If profile file present, check profile, then load case in background
     # If not present, try to check profile via VCF in background, then load in background?
