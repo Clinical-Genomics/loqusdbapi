@@ -15,8 +15,6 @@ from starlette.background import BackgroundTasks
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete as delete_command
-from loqusdb.utils.profiling import get_profiles, profile_match
-from loqusdb.build_models.case import build_case
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
 from loqusdbapi.utils import build_case_object

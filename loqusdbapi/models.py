@@ -7,7 +7,7 @@ from pydantic import BaseModel, validator, ValidationError, Field
 class Case(BaseModel):
     case_id: str
     profile_path: Union[Path, str]
-    vcf_path: Optional[Union[Path, str]]
+    vcf_path: [Union[Path, str]]
     vcf_sv_path: Optional[Union[Path, str]]
     nr_variants: Optional[int] = 0
     nr_sv_variants: Optional[int] = 0

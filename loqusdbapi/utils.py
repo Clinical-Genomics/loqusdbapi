@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Union
 
-from cyvcf2 import VCF
+from cyvcf2 import VCF, Variant
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.profiling import get_profiles, compare_profiles
@@ -107,7 +107,7 @@ def build_case_object(
     adapter: MongoAdapter,
     case_id: str,
     profile_path: Union[Path, str],
-    vcf_path: Union[Path, str] = None,
+    vcf_path: Union[Path, str],
     vcf_sv_path: Union[Path, str] = None,
 ) -> Case:
 
@@ -126,3 +126,26 @@ def build_case_object(
     adapter.add_case(case_object.dict(by_alias=True))
 
     return adapter.case({"case_id": case_id})
+
+
+def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str]):
+    for variant in VCF(vcf_file):
+        parsed_variant = build_snv_variant(variant=variant)
+        if not parsed_variant:
+            continue
+
+    pass
+
+
+def insert_sv_variants():
+    pass
+
+
+def build_snv_variant(
+    variant: Variant,
+):
+    pass
+
+
+def build_sv_variant():
+    pass
