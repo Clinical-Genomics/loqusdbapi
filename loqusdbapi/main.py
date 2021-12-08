@@ -136,7 +136,6 @@ async def load_case(
         profile_path=profile_file,
         adapter=db,
     )
-    background_tasks.add_task()
     return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
 
     # If profile file present, check profile, then load case in background
