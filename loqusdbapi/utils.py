@@ -3,8 +3,11 @@ from typing import List, Union
 
 from cyvcf2 import VCF, Variant
 
+from loqusdb.constants import GENOTYPE_MAP
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.profiling import get_profiles, compare_profiles
+from loqusdb.utils.delete import delete
+from loqusdb.build_models.variant import get_variant_id, get_coords, check_par
 from loqusdbapi.exceptions import VCFParserError, ProfileDuplicationError
 from loqusdbapi.models import Case, Individual
 from loqusdbapi.settings import settings
@@ -128,24 +131,99 @@ def build_case_object(
     return adapter.case({"case_id": case_id})
 
 
-def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str]):
+def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+
+    variants = []
     for variant in VCF(vcf_file):
-        parsed_variant = build_snv_variant(variant=variant)
-        if not parsed_variant:
-            continue
+        variant_id = get_variant_id(variant=variant)
+        ref = variant.REF
+        alt = variant.ALT[0]
 
-    pass
+        coordinates = get_coords(variant)
+        chrom = coordinates["chrom"]
+        pos = coordinates["pos"]
+        found_homozygote = 0
+        found_hemizygote = 0
+
+        for ind_obj in case_obj["individuals"]:
+            ind_id = ind_obj["ind_id"]
+            ind_pos = ind_obj["ind_index"]
+            gq = int(variant.gt_quals[ind_pos])
+            if gq < settings.gq_treshold:
+                continue
+            genotype = GENOTYPE_MAP[variant.gt_types[ind_pos]]
+
+            if genotype in ["het", "hom_alt"]:
+
+                if (
+                    chrom in ["X", "Y"]
+                    and ind_obj["sex"] == 1
+                    and not check_par(chrom, pos, genome_build=settings.genome_build)
+                ):
+                    found_hemizygote = 1
+
+                if genotype == "hom_alt":
+                    found_homozygote = 1
+
+                variant_obj = Variant(
+                    variant_id=variant_id,
+                    chrom=chrom,
+                    pos=pos,
+                    end=coordinates["end"],
+                    ref=ref,
+                    alt=alt,
+                    end_chrom=coordinates["end_chrom"],
+                    sv_type=coordinates["sv_type"],
+                    sv_len=coordinates["sv_length"],
+                    case_id=case_obj["case_id"],
+                    homozygote=found_homozygote,
+                    hemizygote=found_hemizygote,
+                    is_sv=False,
+                    id_column=variant.ID,
+                )
+                variants.append(variant_obj)
+    adapter.add_variants(variants=variants)
 
 
-def insert_sv_variants():
-    pass
+def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+
+    for variant in VCF(vcf_file):
+        variant_id = get_variant_id(variant=variant)
+        ref = variant.REF
+        alt = variant.ALT[0]
+        coordinates = get_coords(variant)
+        chrom = coordinates["chrom"]
+        pos = coordinates["pos"]
+
+        variant_obj = Variant(
+            variant_id=variant_id,
+            chrom=chrom,
+            pos=pos,
+            end=coordinates["end"],
+            ref=ref,
+            alt=alt,
+            end_chrom=coordinates["end_chrom"],
+            sv_type=coordinates["sv_type"],
+            sv_len=coordinates["sv_length"],
+            case_id=case_obj["case_id"],
+            homozygote=0,
+            hemizygote=0,
+            is_sv=True,
+            id_column=variant.ID,
+        )
+        adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 
-def build_snv_variant(
-    variant: Variant,
+def load_case_variants(
+    adapter: MongoAdapter,
+    case_obj: dict,
 ):
-    pass
-
-
-def build_sv_variant():
-    pass
+    try:
+        vcf_path = case_obj.get("vcf_path")
+        if vcf_path:
+            insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
+        vcf_sv_path = case_obj.get("vcf_sv_path")
+        if vcf_sv_path:
+            insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
+    except Exception as e:
+        delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
