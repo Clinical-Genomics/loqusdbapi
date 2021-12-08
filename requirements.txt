@@ -1,5 +1,5 @@
 pytest==5.4.3
-loqusdb==2.6.0
+loqusdb==2.6.3
 cyvcf2==0.30.12
 mongomock==3.18.0
 click==7.1.2
@@ -15,7 +15,6 @@ pydantic==1.7.2
 starlette==0.13.6
 uvicorn[standard]
 bump2version
-
 uvloop
 httptools
 gunicorn
