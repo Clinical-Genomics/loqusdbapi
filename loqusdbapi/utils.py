@@ -112,7 +112,7 @@ def build_case_object(
     profile_path: Union[Path, str],
     vcf_path: Union[Path, str],
     vcf_sv_path: Union[Path, str] = None,
-) -> Case:
+) -> dict:
 
     case_object: Case = Case(
         case_id=case_id, profile_path=profile_path, vcf_path=vcf_path, vcf_sv_path=vcf_sv_path

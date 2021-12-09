@@ -17,7 +17,7 @@ from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete as delete_command
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
-from loqusdbapi.utils import build_case_object
+from loqusdbapi.utils import build_case_object, load_case_variants
 
 LOG = logging.getLogger("__name__")
 
@@ -129,13 +129,14 @@ async def load_case(
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
 
-    case_result = build_case_object(
+    case_result: dict = build_case_object(
         case_id=case_id,
         vcf_path=snv_file,
         vcf_sv_path=sv_file,
         profile_path=profile_file,
         adapter=db,
     )
+    background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
     return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
 
     # If profile file present, check profile, then load case in background
