@@ -72,22 +72,22 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             profile=profiles[sample],
         )
         if case_object.vcf_path:
-            case_object.individuals.append(individual.dict())
-            case_object.inds[sample] = individual.dict()
+            case_object.individuals.append(individual)
+            case_object.inds[sample] = individual
         if case_object.vcf_sv_path:
-            case_object.sv_individuals.append(individual.dict())
-            case_object.sv_inds[sample] = individual.dict()
+            case_object.sv_individuals.append(individual)
+            case_object.sv_inds[sample] = individual
 
     return case_object
 
 
 def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
-    for case in adapter.cases():
+    for existing_case in adapter.cases():
 
-        if case.get("individuals") is None:
+        if existing_case.get("individuals") is None:
             continue
 
-        for individual in case["individuals"]:
+        for individual in existing_case["individuals"]:
             if not individual.get("profile"):
                 continue
 
@@ -100,7 +100,7 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
                     )
 
                 elif similarity >= settings.load_soft_threshold:
-                    match = f"{case['case_id']}.{individual['ind_id']}"
+                    match = f"{existing_case['case_id']}.{individual['ind_id']}"
                     sample.similar_samples.append(match)
 
     return case_object

@@ -4,6 +4,18 @@ from typing import Optional, List, Union
 from pydantic import BaseModel, validator, ValidationError, Field
 
 
+class Individual(BaseModel):
+    ind_id: str
+    case_id: str
+    mother: Optional[str]
+    father: Optional[str]
+    sex: Optional[str]
+    phenotype: Optional[str]
+    ind_index: Optional[int]
+    profile: Optional[dict] = {}
+    similar_samples: Optional[list] = []
+
+
 class Case(BaseModel):
     case_id: str
     profile_path: Optional[Union[Path, str]]
@@ -11,7 +23,7 @@ class Case(BaseModel):
     vcf_sv_path: Optional[Union[Path, str]]
     nr_variants: Optional[int] = 0
     nr_sv_variants: Optional[int] = 0
-    individuals: Optional[list] = []
+    individuals: Optional[List[Individual]] = []
     sv_individuals: Optional[list] = []
     inds: Optional[dict] = Field(alias="_inds", default={})
     sv_inds: Optional[dict] = Field(alias="_sv_inds", default={})
@@ -23,18 +35,6 @@ class Case(BaseModel):
         if Path(value).exists():
             return Path(value).absolute()
         raise ValidationError
-
-
-class Individual(BaseModel):
-    ind_id: str
-    case_id: str
-    mother: Optional[str]
-    father: Optional[str]
-    sex: Optional[str]
-    phenotype: Optional[str]
-    ind_index: Optional[int]
-    profile: Optional[dict] = {}
-    similar_samples: Optional[list] = []
 
 
 class BaseVariant(BaseModel):
