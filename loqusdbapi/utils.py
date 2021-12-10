@@ -64,7 +64,6 @@ def get_profiles(adapter: MongoAdapter, vcf_file: Path):
         if not found_variant:
             for individual in individuals:
                 profiles[individual].append(f"{ref}{ref}")
-    print(profiles)
 
     return profiles
 
@@ -82,6 +81,7 @@ def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
         snv_vcf_var_types.add(variant.var_type)
 
     if len(snv_vcf_var_types) != 1:
+        print(snv_vcf_var_types)
         raise VCFParserError(f"Variant types in {vcf_path}: {len(snv_vcf_var_types)}, required: 1")
     if "snv" not in snv_vcf_var_types:
         raise VCFParserError(f"Variant types in {vcf_path}: {snv_vcf_var_types}, required: snv")
@@ -105,6 +105,7 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
         sv_vcf_variant_count += 1
         sv_vcf_var_types.add(variant.var_type)
     if len(sv_vcf_var_types) != 1:
+        print(sv_vcf_var_types)
         raise VCFParserError(f"Variant types in {vcf_path}: {len(sv_vcf_var_types)}, required: 1")
 
     if "sv" not in sv_vcf_var_types:
@@ -118,7 +119,6 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
 def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
 
     profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
-    print(profiles)
     profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
     samples: List[str] = profile_vcf.samples
     for sample_index, sample in enumerate(samples):
@@ -128,7 +128,6 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             ind_index=sample_index,
             profile=profiles[sample],
         )
-        print(individual)
         if case_object.vcf_path:
             case_object.individuals.append(individual)
             case_object.inds[sample] = individual
@@ -175,10 +174,14 @@ def build_case_object(
     vcf_sv_path: Union[Path, str] = None,
 ) -> dict:
 
+    # Create case object prior to parsing VCF files
     case_object: Case = Case(
         case_id=case_id, profile_path=profile_path, vcf_path=vcf_path, vcf_sv_path=vcf_sv_path
     )
+    # Parse MAF profiles from profile files and save in the case object
     case_object: Case = parse_profiles(adapter=adapter, case_object=case_object)
+
+    # Check if profiles have any duplicates in the database
     case_object: Case = check_profile_duplicates(adapter=adapter, case_object=case_object)
 
     if vcf_path:

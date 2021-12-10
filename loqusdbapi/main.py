@@ -16,6 +16,7 @@ from starlette.background import BackgroundTasks
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete as delete_command
+from loqusdbapi.exceptions import LoqusdbAPIError
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
 from loqusdbapi.utils import build_case_object, load_case_variants
@@ -140,12 +141,20 @@ async def load_case(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
         )
 
-    case_result: dict = build_case_object(
-        case_id=case_id,
-        vcf_path=snv_file,
-        vcf_sv_path=sv_file,
-        profile_path=profile_file,
-        adapter=db,
-    )
+    try:
+        case_result: dict = build_case_object(
+            case_id=case_id,
+            vcf_path=snv_file,
+            vcf_sv_path=sv_file,
+            profile_path=profile_file,
+            adapter=db,
+        )
+    except LoqusdbAPIError as e:
+        return JSONResponse(
+            f"LoqusdbAPIError: {e.message}",
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+
+    print(f"Created {case_result}")
     background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
     return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
