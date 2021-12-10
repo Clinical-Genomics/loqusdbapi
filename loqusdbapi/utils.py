@@ -128,7 +128,7 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
         if case_object.vcf_sv_path:
             case_object.sv_individuals.append(individual)
             case_object.sv_inds[sample] = individual
-
+    print(case_object)
     return case_object
 
 
