@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 
+from bson import json_util
 from fastapi import Depends, FastAPI, HTTPException, status
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
@@ -103,7 +104,7 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Case {case_id} not found"
         )
-    return case
+    return JSONResponse(json_util.dumps(case), status_code=status.HTTP_200_OK)
 
 
 @app.delete("/cases/{case_id}")
@@ -157,4 +158,4 @@ async def load_case(
 
     print(f"Created {case_result}")
     background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
-    return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
+    return JSONResponse(json_util.dumps(case_result), status_code=status.HTTP_202_ACCEPTED)
