@@ -80,10 +80,7 @@ def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
         snv_vcf_variant_count += 1
         snv_vcf_var_types.add(variant.var_type)
 
-    if len(snv_vcf_var_types) != 1:
-        print(snv_vcf_var_types)
-        raise VCFParserError(f"Variant types in {vcf_path}: {len(snv_vcf_var_types)}, required: 1")
-    if "snv" not in snv_vcf_var_types:
+    if "sv" in snv_vcf_var_types or "cnv" in snv_vcf_var_types:
         raise VCFParserError(f"Variant types in {vcf_path}: {snv_vcf_var_types}, required: snv")
 
     case_object.nr_variants = snv_vcf_variant_count
@@ -104,12 +101,9 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
     for variant in sv_vcf:
         sv_vcf_variant_count += 1
         sv_vcf_var_types.add(variant.var_type)
-    if len(sv_vcf_var_types) != 1:
-        print(sv_vcf_var_types)
-        raise VCFParserError(f"Variant types in {vcf_path}: {len(sv_vcf_var_types)}, required: 1")
 
-    if "sv" not in sv_vcf_var_types:
-        raise VCFParserError(f"Variant types in {vcf_path}: {sv_vcf_var_types}, required: sv")
+    print(sv_vcf_var_types)
+
     case_object.nr_sv_variants = sv_vcf_variant_count
     case_object.sv_individuals = sv_vcf_individuals
     case_object.vcf_sv_path = vcf_path
