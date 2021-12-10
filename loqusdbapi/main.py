@@ -158,5 +158,5 @@ async def load_case(
         )
 
     print(f"Created {case_result}")
-    background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
+    load_case_variants(adapter=db, case_obj=case_result)
     return JSONResponse(jsonable_encoder(Case(**case_result)), status_code=status.HTTP_202_ACCEPTED)
