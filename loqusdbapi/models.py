@@ -12,7 +12,7 @@ class Individual(BaseModel):
     sex: Optional[str]
     phenotype: Optional[str]
     ind_index: Optional[int]
-    profile: Optional[dict] = {}
+    profile: Optional[list] = []
     similar_samples: Optional[list] = []
 
 

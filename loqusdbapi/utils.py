@@ -23,7 +23,6 @@ def get_profiles(adapter: MongoAdapter, vcf_file: Path):
     profiles = {individual: [] for individual in individuals}
 
     for profile_variant in adapter.profile_variants():
-        print(profile_variant)
 
         ref = profile_variant["ref"]
         alt = profile_variant["alt"]
@@ -129,6 +128,7 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             ind_index=sample_index,
             profile=profiles[sample],
         )
+        print(individual)
         if case_object.vcf_path:
             case_object.individuals.append(individual)
             case_object.inds[sample] = individual
