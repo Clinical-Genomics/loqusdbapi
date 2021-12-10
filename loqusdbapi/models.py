@@ -33,7 +33,7 @@ class Case(BaseModel):
         if not value:
             return
         if Path(value).exists():
-            return Path(value).absolute()
+            return Path(value).absolute().as_posix()
         return value
 
 
