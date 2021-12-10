@@ -2,9 +2,10 @@ import logging
 from pathlib import Path
 from typing import List, Union
 
-from cyvcf2 import VCF, Variant
+from cyvcf2 import VCF
 
 from loqusdb.constants import GENOTYPE_MAP
+from loqusdb.models import Variant
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.profiling import compare_profiles
 from loqusdb.utils.delete import delete
@@ -232,6 +233,7 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
                     id_column=variant.ID,
                 )
                 variants.append(variant_obj)
+                print(variant_obj)
     adapter.add_variants(variants=variants)
 
 
@@ -261,6 +263,7 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
             is_sv=True,
             id_column=variant.ID,
         )
+        print(variant_obj)
         adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 

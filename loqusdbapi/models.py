@@ -49,14 +49,13 @@ class Case(BaseModel):
 
 
 class BaseVariant(BaseModel):
+    id: str = Field(alias="_id")
     chrom: str
     observations: int
     families: List[str] = []
-    total: int
 
 
 class Variant(BaseVariant):
-    _id: str
     start: int
     end: int
     ref: str
@@ -69,10 +68,12 @@ class StructuralVariant(BaseVariant):
     end_chrom: str
     end_left: int
     end_right: int
+    end_sum: int
     sv_type: str
     length: int
     pos_left: int
     pos_right: int
+    pos_sum: int
 
 
 class Cases(BaseModel):
