@@ -84,7 +84,6 @@ def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
         raise VCFParserError(f"Variant types in {vcf_path}: {snv_vcf_var_types}, required: snv")
 
     case_object.nr_variants = snv_vcf_variant_count
-    case_object.individuals = snv_vcf_individuals
     case_object.vcf_path = vcf_path
 
     return case_object
@@ -105,7 +104,6 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
     print(sv_vcf_var_types)
 
     case_object.nr_sv_variants = sv_vcf_variant_count
-    case_object.sv_individuals = sv_vcf_individuals
     case_object.vcf_sv_path = vcf_path
     return case_object
 
@@ -154,6 +152,7 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
                     match = f"{existing_case['case_id']}.{individual['ind_id']}"
                     sample.similar_samples.append(match)
 
+    print(case_object)
     return case_object
 
 
@@ -180,7 +179,7 @@ def build_case_object(
 
     if vcf_sv_path:
         case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
-
+    print(case_object)
     print(case_object.dict(by_alias=True, exclude_none=True))
     adapter.add_case(case_object.dict(by_alias=True, exclude_none=True))
 
