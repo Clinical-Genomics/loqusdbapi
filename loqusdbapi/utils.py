@@ -264,7 +264,7 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
         adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 
-async def load_case_variants(
+def load_case_variants(
     adapter: MongoAdapter,
     case_obj: dict,
 ):
