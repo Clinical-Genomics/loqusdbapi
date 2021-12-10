@@ -181,7 +181,7 @@ def build_case_object(
     if vcf_sv_path:
         case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
 
-    adapter.add_case(case_object.dict(by_alias=True))
+    adapter.add_case(case_object.dict(by_alias=True, exclude_none=True, exclude_unset=True))
 
     return adapter.case({"case_id": case_id})
 
