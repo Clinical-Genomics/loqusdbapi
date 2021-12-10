@@ -6,7 +6,7 @@ from cyvcf2 import VCF, Variant
 
 from loqusdb.constants import GENOTYPE_MAP
 from loqusdb.plugins.mongo.adapter import MongoAdapter
-from loqusdb.utils.profiling import get_profiles, compare_profiles
+from loqusdb.utils.profiling import compare_profiles
 from loqusdb.utils.delete import delete
 from loqusdb.build_models.variant import get_variant_id, get_coords, check_par
 from loqusdbapi.exceptions import VCFParserError, ProfileDuplicationError
@@ -14,6 +14,60 @@ from loqusdbapi.models import Case, Individual
 from loqusdbapi.settings import settings
 
 LOG = logging.getLogger("__name__")
+
+
+def get_profiles(adapter: MongoAdapter, vcf_file: Path):
+
+    vcf = VCF(vcf_file)
+    individuals = vcf.samples
+    profiles = {individual: [] for individual in individuals}
+
+    for profile_variant in adapter.profile_variants():
+        print(profile_variant)
+
+        ref = profile_variant["ref"]
+        alt = profile_variant["alt"]
+
+        pos = profile_variant["pos"]
+        end = pos + 1
+        chrom = profile_variant["chrom"]
+
+        region = f"{chrom}:{pos}-{end}"
+
+        # Find variants in region
+
+        found_variant = False
+        for variant in vcf(region):
+
+            variant_id = get_variant_id(variant)
+
+            # If variant id i.e. chrom_pos_ref_alt matches
+            if variant_id == profile_variant["_id"]:
+                found_variant = True
+                # find genotype for each individual in vcf
+                for i, individual in enumerate(individuals):
+
+                    genotype = GENOTYPE_MAP[variant.gt_types[i]]
+                    if genotype == "hom_alt":
+                        gt_str = f"{alt}{alt}"
+                    elif genotype == "het":
+                        gt_str = f"{ref}{alt}"
+                    else:
+                        gt_str = f"{ref}{ref}"
+
+                    # Append genotype to profile string of individual
+                    profiles[individual].append(gt_str)
+
+                # Break loop if variant is found in region
+                break
+
+        # If no call was found for variant, give all samples a hom ref genotype
+        if not found_variant:
+            for individual in individuals:
+                profiles[individual].append(f"{ref}{ref}")
+    print(profiles)
+
+    return profiles
 
 
 def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
@@ -64,7 +118,8 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
 
 def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
 
-    profiles = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
+    profiles: dict = parse_profiles(adapter=adapter, vcf_file=case_object.profile_path)
+    print(profiles)
     profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
     samples: List[str] = profile_vcf.samples
     for sample_index, sample in enumerate(samples):
