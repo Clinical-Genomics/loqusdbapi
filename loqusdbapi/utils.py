@@ -101,8 +101,6 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
         sv_vcf_variant_count += 1
         sv_vcf_var_types.add(variant.var_type)
 
-    print(sv_vcf_var_types)
-
     case_object.nr_sv_variants = sv_vcf_variant_count
     case_object.vcf_sv_path = vcf_path
     return case_object
@@ -126,7 +124,6 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
         if case_object.vcf_sv_path:
             case_object.sv_inds[sample] = individual
             case_object.sv_individuals.append(Individual(**individual.dict()))
-    print(case_object)
     return case_object
 
 
@@ -179,8 +176,6 @@ def build_case_object(
 
     if vcf_sv_path:
         case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
-    print(case_object)
-    print(case_object.dict(by_alias=True, exclude_none=True))
     adapter.add_case(case_object.dict(by_alias=True, exclude_none=True))
 
     return adapter.case({"case_id": case_id})
