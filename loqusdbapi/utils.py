@@ -123,10 +123,10 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             profile=profiles[sample],
         )
         if case_object.vcf_path:
-            case_object.individuals.extend([individual])
+            case_object.individuals.extend(individual)
             case_object.inds[sample] = individual
         if case_object.vcf_sv_path:
-            case_object.sv_individuals.extend([individual])
+            case_object.sv_individuals.extend(individual)
             case_object.sv_inds[sample] = individual
 
     return case_object
@@ -181,7 +181,7 @@ def build_case_object(
     if vcf_sv_path:
         case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
 
-    adapter.add_case(case_object.dict(by_alias=True, exclude_none=True, exclude_unset=True))
+    adapter.add_case(case_object.dict(by_alias=True, exclude_none=True))
 
     return adapter.case({"case_id": case_id})
 

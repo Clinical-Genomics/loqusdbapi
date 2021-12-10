@@ -25,7 +25,7 @@ class Case(BaseModel):
     vcf_sv_path: Optional[Union[Path, str]]
     nr_variants: Optional[int] = 0
     nr_sv_variants: Optional[int] = 0
-    individuals: Optional[List[Individual]] = []
+    individuals: Optional[list] = []
     sv_individuals: Optional[list] = []
     inds: Optional[dict] = Field(alias="_inds", default={})
     sv_inds: Optional[dict] = Field(alias="_sv_inds", default={})
