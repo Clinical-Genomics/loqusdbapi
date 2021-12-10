@@ -4,6 +4,7 @@ Small loqusdb api
 
 """
 import logging
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -129,6 +130,16 @@ async def load_case(
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
 
+    if (
+        (sv_file and not Path(sv_file).exists())
+        or not Path(snv_file).exists()
+        or not Path(profile_file).exists()
+    ):
+        return JSONResponse(
+            "Input file path does not exist",
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+        )
+
     case_result: dict = build_case_object(
         case_id=case_id,
         vcf_path=snv_file,
@@ -138,6 +149,3 @@ async def load_case(
     )
     background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
     return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
-
-    # If profile file present, check profile, then load case in background
-    # If not present, try to check profile via VCF in background, then load in background?

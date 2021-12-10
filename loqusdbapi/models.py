@@ -34,7 +34,7 @@ class Case(BaseModel):
             return
         if Path(value).exists():
             return Path(value).absolute()
-        raise ValidationError
+        return value
 
 
 class BaseVariant(BaseModel):
