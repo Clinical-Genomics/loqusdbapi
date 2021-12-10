@@ -122,7 +122,7 @@ async def delete_case(
 
 
 @app.post("/cases/{case_id}")
-async def load_case(
+def load_case(
     background_tasks: BackgroundTasks,
     case_id: str,
     snv_file: str,
