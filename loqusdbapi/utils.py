@@ -151,7 +151,6 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
                 continue
 
             for sample in case_object.individuals:
-                print(f"Comparing {sample.profile} and {individual['profile']}")
                 similarity = compare_profiles(sample.profile, individual["profile"])
                 if similarity >= settings.load_hard_threshold:
                     raise ProfileDuplicationError(
