@@ -105,7 +105,7 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Case {case_id} not found"
         )
-    return JSONResponse(case, status_code=status.HTTP_200_OK)
+    return JSONResponse(Case(**case), status_code=status.HTTP_200_OK)
 
 
 @app.delete("/cases/{case_id}")
@@ -159,4 +159,4 @@ async def load_case(
 
     print(f"Created {case_result}")
     background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
-    return JSONResponse(case_result, status_code=status.HTTP_202_ACCEPTED)
+    return JSONResponse(Case(**case_result), status_code=status.HTTP_202_ACCEPTED)
