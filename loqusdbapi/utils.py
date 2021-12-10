@@ -118,7 +118,7 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
 
 def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
 
-    profiles: dict = parse_profiles(adapter=adapter, vcf_file=case_object.profile_path)
+    profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
     print(profiles)
     profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
     samples: List[str] = profile_vcf.samples
