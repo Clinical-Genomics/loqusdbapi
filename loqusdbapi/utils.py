@@ -181,7 +181,7 @@ def build_case_object(
     return adapter.case({"case_id": case_id})
 
 
-def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+async def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
 
     variants = []
     for variant in VCF(vcf_file):
@@ -235,7 +235,7 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
     adapter.add_variants(variants=variants)
 
 
-def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+async def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
 
     for variant in VCF(vcf_file):
         variant_id = get_variant_id(variant=variant)
@@ -264,7 +264,7 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
         adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 
-def load_case_variants(
+async def load_case_variants(
     adapter: MongoAdapter,
     case_obj: dict,
 ):
