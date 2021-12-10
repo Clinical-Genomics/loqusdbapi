@@ -271,9 +271,9 @@ async def load_case_variants(
     try:
         vcf_path = case_obj.get("vcf_path")
         if vcf_path:
-            insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
+            await insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
         vcf_sv_path = case_obj.get("vcf_sv_path")
         if vcf_sv_path:
-            insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
+            await insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
         delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
