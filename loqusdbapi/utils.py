@@ -181,7 +181,7 @@ def build_case_object(
     return adapter.case({"case_id": case_id})
 
 
-async def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
 
     variants = []
     for variant in VCF(vcf_file):
@@ -235,7 +235,7 @@ async def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str],
     adapter.add_variants(variants=variants)
 
 
-async def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
 
     for variant in VCF(vcf_file):
         variant_id = get_variant_id(variant=variant)
@@ -271,9 +271,9 @@ async def load_case_variants(
     try:
         vcf_path = case_obj.get("vcf_path")
         if vcf_path:
-            await insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
+            insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
         vcf_sv_path = case_obj.get("vcf_sv_path")
         if vcf_sv_path:
-            await insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
+            insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
         delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
