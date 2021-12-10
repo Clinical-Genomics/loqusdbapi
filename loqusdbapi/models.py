@@ -1,8 +1,7 @@
 from pathlib import Path
 from typing import Optional, List, Union, Any
 
-from bson import ObjectId
-from pydantic import BaseModel, validator, ValidationError, Field
+from pydantic import BaseModel, validator, Field
 
 
 class Individual(BaseModel):
@@ -10,7 +9,7 @@ class Individual(BaseModel):
     case_id: str
     mother: Optional[str]
     father: Optional[str]
-    sex: Optional[str]
+    sex: Optional[int] = 0
     phenotype: Optional[str]
     ind_index: Optional[int]
     profile: Optional[list] = []
