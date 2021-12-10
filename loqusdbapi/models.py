@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Any
 
 from bson import ObjectId
 from pydantic import BaseModel, validator, ValidationError, Field
@@ -18,7 +18,7 @@ class Individual(BaseModel):
 
 
 class Case(BaseModel):
-    id: Optional[Union[ObjectId, str]] = Field(alias="_id")
+    id: Optional[Any] = Field(alias="_id")
     case_id: str
     profile_path: Optional[Union[Path, str]]
     vcf_path: Optional[Union[Path, str]]
