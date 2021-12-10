@@ -9,6 +9,7 @@ from typing import List, Optional
 
 from bson import json_util
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
 from pydantic import BaseModel, BaseSettings
@@ -158,4 +159,4 @@ async def load_case(
 
     print(f"Created {case_result}")
     background_tasks.add_task(load_case_variants, adapter=db, case_obj=case_result)
-    return JSONResponse(json_util.dumps(case_result), status_code=status.HTTP_202_ACCEPTED)
+    return JSONResponse(jsonable_encoder(case_result), status_code=status.HTTP_202_ACCEPTED)

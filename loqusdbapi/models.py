@@ -30,6 +30,9 @@ class Case(BaseModel):
     inds: Optional[dict] = Field(alias="_inds", default={})
     sv_inds: Optional[dict] = Field(alias="_sv_inds", default={})
 
+    class Config:
+        arbitrary_types_allowed = True
+
     @validator("vcf_path", "profile_path", "vcf_sv_path")
     def validate_path_exists(cls, value):
         if not value:
@@ -37,6 +40,11 @@ class Case(BaseModel):
         if Path(value).exists():
             return Path(value).absolute().as_posix()
         return value
+
+    @validator("id")
+    def id_to_str(cls, value):
+        if value:
+            return str(value)
 
 
 class BaseVariant(BaseModel):
