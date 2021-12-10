@@ -81,7 +81,7 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
             case_object.sv_individuals.append(individual)
             case_object.sv_inds[sample] = individual
 
-    LOG.INFO(case_object)
+    LOG.info(case_object)
 
     return case_object
 
@@ -97,6 +97,7 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
                 continue
 
             for sample in case_object.individuals:
+                LOG.info(f"Comparing {sample.profile and individual['profile']}")
                 similarity = compare_profiles(sample.profile, individual["profile"])
                 if similarity >= settings.load_hard_threshold:
                     raise ProfileDuplicationError(
