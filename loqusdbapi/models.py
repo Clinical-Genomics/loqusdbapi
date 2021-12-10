@@ -32,6 +32,7 @@ class Case(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        allow_population_by_field_name = True
 
     @validator("vcf_path", "profile_path", "vcf_sv_path")
     def validate_path_exists(cls, value):
