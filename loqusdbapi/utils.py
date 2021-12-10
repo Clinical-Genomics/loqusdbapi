@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import List, Union
 
@@ -11,6 +12,8 @@ from loqusdb.build_models.variant import get_variant_id, get_coords, check_par
 from loqusdbapi.exceptions import VCFParserError, ProfileDuplicationError
 from loqusdbapi.models import Case, Individual
 from loqusdbapi.settings import settings
+
+LOG = logging.getLogger("__name__")
 
 
 def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
@@ -77,6 +80,8 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
         if case_object.vcf_sv_path:
             case_object.sv_individuals.append(individual)
             case_object.sv_inds[sample] = individual
+
+    LOG.INFO(case_object)
 
     return case_object
 
