@@ -279,5 +279,5 @@ def load_case_variants(
         if vcf_sv_path:
             insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
-        print(e)
+        print(eut master)
         delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)

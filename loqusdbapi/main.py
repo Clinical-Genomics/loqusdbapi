@@ -4,15 +4,14 @@ Small loqusdb api
 
 """
 import logging
+import loqusdb
 from pathlib import Path
 from typing import List, Optional
 
-from bson import json_util
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
-from pydantic import BaseModel, BaseSettings
 from starlette.responses import JSONResponse
 from starlette.background import BackgroundTasks
 
@@ -48,6 +47,7 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 def read_root():
     return {
         "message": "Welcome to the loqusdbapi",
+        "loqusdb_version": loqusdb.__version__,
     }
 
 
