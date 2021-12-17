@@ -150,7 +150,6 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
                     match = f"{existing_case['case_id']}.{individual['ind_id']}"
                     sample.similar_samples.append(match)
 
-    print(case_object)
     return case_object
 
 
