@@ -109,21 +109,16 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
 
 
 @app.delete("/cases/{case_id}")
-async def delete_case(
-    background_tasks: BackgroundTasks, case_id: str, db: MongoAdapter = Depends(database)
-):
+def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
     existing_case = db.case({"case_id": case_id})
     if not existing_case:
         return JSONResponse(f"Case {case_id} does not exist", status_code=status.HTTP_404_NOT_FOUND)
-    background_tasks.add_task(
-        delete_command, adapter=db, case_obj=existing_case, genome_build=settings.genome_build
-    )
-    return JSONResponse(f"Case {case_id} will be deleted", status_code=status.HTTP_202_ACCEPTED)
+    delete_command(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
+    return JSONResponse(f"Case {case_id} had been deleted", status_code=status.HTTP_200_OK)
 
 
 @app.post("/cases/{case_id}")
 def load_case(
-    background_tasks: BackgroundTasks,
     case_id: str,
     snv_file: str,
     profile_file: str,
@@ -151,12 +146,10 @@ def load_case(
             profile_path=profile_file,
             adapter=db,
         )
+        load_case_variants(adapter=db, case_obj=case_result)
+        return JSONResponse(jsonable_encoder(Case(**case_result)), status_code=status.HTTP_200_OK)
     except LoqusdbAPIError as e:
         return JSONResponse(
             f"LoqusdbAPIError: {e.message}",
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
         )
-
-    print(f"Created {case_result}")
-    load_case_variants(adapter=db, case_obj=case_result)
-    return JSONResponse(jsonable_encoder(Case(**case_result)), status_code=status.HTTP_202_ACCEPTED)

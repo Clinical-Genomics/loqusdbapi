@@ -233,7 +233,6 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
                     id_column=variant.ID,
                 )
                 variants.append(variant_obj)
-                print(variant_obj)
     adapter.add_variants(variants=variants)
 
 
@@ -263,7 +262,6 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
             is_sv=True,
             id_column=variant.ID,
         )
-        print(variant_obj)
         adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 
@@ -279,5 +277,5 @@ def load_case_variants(
         if vcf_sv_path:
             insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
-        print(e)
+        LOG.info(e)
         delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
