@@ -200,7 +200,7 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
             ind_id = ind_obj["ind_id"]
             ind_pos = ind_obj["ind_index"]
             gq = int(variant.gt_quals[ind_pos])
-            if gq < settings.gq_treshold:
+            if gq < settings.load_gq_threshold:
                 continue
             genotype = GENOTYPE_MAP[variant.gt_types[ind_pos]]
 
