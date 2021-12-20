@@ -17,7 +17,7 @@ from loqusdbapi.settings import settings
 LOG = logging.getLogger("__name__")
 
 
-def get_profiles(adapter: MongoAdapter, vcf_file: Path):
+def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> dict:
 
     vcf = VCF(vcf_file)
     individuals = vcf.samples
@@ -108,6 +108,7 @@ def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
 
 
 def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
+    """Parse profiles for each individual from profile bcf file"""
 
     profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
     profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
@@ -129,6 +130,8 @@ def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
 
 
 def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
+    """Compare profile variants from upload with all profiles of all cases in database.
+    Raises error if profile matches any of the existing profiles"""
     for existing_case in adapter.cases():
 
         if existing_case.get("individuals") is None:
@@ -160,6 +163,7 @@ def build_case_object(
     vcf_path: Union[Path, str],
     vcf_sv_path: Union[Path, str] = None,
 ) -> dict:
+    """Build case document and insert into the database, return resulting document"""
 
     # Create case object prior to parsing VCF files
     case_object: Case = Case(
@@ -181,8 +185,8 @@ def build_case_object(
     return adapter.case({"case_id": case_id})
 
 
-def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
-
+def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict) -> None:
+    """Build variant documents and bulk insert them into database"""
     variants = []
     for variant in VCF(vcf_file):
         variant_id = get_variant_id(variant=variant)
@@ -235,7 +239,8 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
     adapter.add_variants(variants=variants)
 
 
-def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict):
+def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict) -> None:
+    """Build sv_variant documents and insert them into database on the fly, one at a time"""
 
     for variant in VCF(vcf_file):
         variant_id = get_variant_id(variant=variant)
@@ -267,7 +272,9 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
 def load_case_variants(
     adapter: MongoAdapter,
     case_obj: dict,
-):
+) -> None:
+    """Load case variants into loqusdb"""
+
     try:
         vcf_path = case_obj.get("vcf_path")
         if vcf_path:
@@ -276,5 +283,5 @@ def load_case_variants(
         if vcf_sv_path:
             insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
-        LOG.info(e)
         delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
+        raise

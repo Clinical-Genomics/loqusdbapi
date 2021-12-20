@@ -13,11 +13,9 @@ from fastapi.encoders import jsonable_encoder
 from mongo_adapter import get_client
 from mongo_adapter.exceptions import Error as DB_Error
 from starlette.responses import JSONResponse
-from starlette.background import BackgroundTasks
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete
-from loqusdbapi.exceptions import LoqusdbAPIError
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
 from loqusdbapi.utils import build_case_object, load_case_variants
@@ -89,6 +87,7 @@ def read_sv(
 
 @app.get("/cases", response_model=Cases)
 def read_cases(db: MongoAdapter = Depends(database)):
+    """Return counts of SNV and SV variants in database"""
     nr_cases_snvs = db.nr_cases(snv_cases=True, sv_cases=False)
     nr_cases_svs = db.nr_cases(snv_cases=False, sv_cases=True)
 
@@ -100,6 +99,7 @@ def read_cases(db: MongoAdapter = Depends(database)):
 
 @app.get("/cases/{case_id}", response_model=Case)
 def read_case(case_id: str, db: MongoAdapter = Depends(database)):
+    """Return a specific case given petname ID"""
     case = db.case({"case_id": case_id})
     if not case:
         raise HTTPException(
@@ -110,6 +110,7 @@ def read_case(case_id: str, db: MongoAdapter = Depends(database)):
 
 @app.delete("/cases/{case_id}")
 def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
+    """Delete a specific case given petname ID"""
     existing_case = db.case({"case_id": case_id})
     if not existing_case:
         return JSONResponse(f"Case {case_id} does not exist", status_code=status.HTTP_404_NOT_FOUND)
@@ -117,7 +118,7 @@ def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
     return JSONResponse(f"Case {case_id} had been deleted", status_code=status.HTTP_200_OK)
 
 
-@app.post("/cases/{case_id}")
+@app.post("/cases/{case_id}", response_model=Case)
 def load_case(
     case_id: str,
     snv_file: str,
@@ -125,6 +126,7 @@ def load_case(
     sv_file: Optional[str] = None,
     db: MongoAdapter = Depends(database),
 ):
+    """Upload a case to loqusdb"""
     if db.case({"case_id": case_id}):
         return JSONResponse(f"Case {case_id} already exists", status_code=status.HTTP_409_CONFLICT)
 
@@ -148,8 +150,9 @@ def load_case(
         )
         load_case_variants(adapter=db, case_obj=case_result)
         return JSONResponse(jsonable_encoder(Case(**case_result)), status_code=status.HTTP_200_OK)
-    except LoqusdbAPIError as e:
+    except Exception as e:
+        LOG.error(e)
         return JSONResponse(
-            f"LoqusdbAPIError: {e.message}",
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            f"Exception: {e}",
+            status_code=status.HTTP_400_BAD_REQUEST,
         )
