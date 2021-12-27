@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Dict
 
 from cyvcf2 import VCF
 
@@ -17,7 +17,16 @@ from loqusdbapi.settings import settings
 LOG = logging.getLogger("__name__")
 
 
-def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> dict:
+def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> Dict[str, str]:
+    """
+    Reads VCF file containing one or more samples.
+    Creates a dictionary where each sample ID from VCF file is a key.
+    Retrieves coordinates for each variant from loqusdb.profile_variants
+    Adds each variant of each sample as value of the dictionary.
+    Returns a dictionary :
+    {SAMPLE_ID : [var1, var2, ..., var50]}
+
+    """
 
     vcf = VCF(vcf_file)
     individuals = vcf.samples
