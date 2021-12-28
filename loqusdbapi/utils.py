@@ -17,7 +17,7 @@ from loqusdbapi.settings import settings
 LOG = logging.getLogger("__name__")
 
 
-def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> Dict[str, str]:
+def get_profiles(adapter: MongoAdapter, vcf_file: str) -> Dict[str, str]:
     """
     Reads VCF file containing one or more samples.
     Creates a dictionary where each sample ID from VCF file is a key.
@@ -28,7 +28,7 @@ def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> Dict[str, str]:
 
     """
 
-    vcf = VCF(vcf_file)
+    vcf = VCF(vcf_file, threads=settings.cyvcf_threads)
     individuals = vcf.samples
     profiles = {individual: [] for individual in individuals}
 
@@ -78,67 +78,28 @@ def get_profiles(adapter: MongoAdapter, vcf_file: Path) -> Dict[str, str]:
     return profiles
 
 
-def parse_snv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
+def check_vcf_gq_field(
+    vcf_path: Union[Path, str],
+) -> None:
+    vcf_file = VCF(vcf_path, threads=settings.cyvcf_threads)
+    if not vcf_file.contains("GQ"):
+        raise VCFParserError(f"GQ not found in {vcf_path}")
+
+
+def get_vcf_variant_count(vcf_path: Union[Path, str]) -> int:
+    vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
+    return sum(1 for _ in vcf)
+
+
+def check_snv_variant_types(vcf_path: Union[Path, str]) -> None:
     snv_vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
-    if not snv_vcf.contains("GQ"):
-        raise VCFParserError(f"GQ not found in {vcf_path}")
-    snv_vcf_variant_count = 0
-    snv_vcf_individuals = snv_vcf.samples
-    snv_vcf_var_types = set()
-
     for variant in snv_vcf:
-        snv_vcf_variant_count += 1
-        snv_vcf_var_types.add(variant.var_type)
-
-    if "sv" in snv_vcf_var_types or "cnv" in snv_vcf_var_types:
-        raise VCFParserError(f"Variant types in {vcf_path}: {snv_vcf_var_types}, required: snv")
-
-    case_object.nr_variants = snv_vcf_variant_count
-    case_object.vcf_path = vcf_path
-
-    return case_object
+        if variant.var_type not in ["sv", "cnv"]:
+            continue
+        raise VCFParserError(f"Variant types found in {vcf_path}: {variant.var_type}, allowed: snv")
 
 
-def parse_sv_vcf(vcf_path: Union[Path, str], case_object: Case) -> Case:
-    sv_vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
-    if not sv_vcf.contains("GQ"):
-        raise VCFParserError(f"GQ not found in {vcf_path}")
-    sv_vcf_variant_count = 0
-    sv_vcf_individuals = sv_vcf.samples
-    sv_vcf_var_types = set()
-
-    for variant in sv_vcf:
-        sv_vcf_variant_count += 1
-        sv_vcf_var_types.add(variant.var_type)
-
-    case_object.nr_sv_variants = sv_vcf_variant_count
-    case_object.vcf_sv_path = vcf_path
-    return case_object
-
-
-def parse_profiles(adapter: MongoAdapter, case_object: Case) -> Case:
-    """Parse profiles for each individual from profile bcf file"""
-
-    profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
-    profile_vcf = VCF(case_object.profile_path, threads=settings.cyvcf_threads)
-    samples: List[str] = profile_vcf.samples
-    for sample_index, sample in enumerate(samples):
-        individual = Individual(
-            ind_id=sample,
-            case_id=case_object.case_id,
-            ind_index=sample_index,
-            profile=profiles[sample],
-        )
-        if case_object.vcf_path:
-            case_object.inds[sample] = individual
-            case_object.individuals.append(Individual(**individual.dict()))
-        if case_object.vcf_sv_path:
-            case_object.sv_inds[sample] = individual
-            case_object.sv_individuals.append(Individual(**individual.dict()))
-    return case_object
-
-
-def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
+def check_profile_duplicates(adapter: MongoAdapter, profiles: dict) -> None:
     """Compare profile variants from upload with all profiles of all cases in database.
     Raises error if profile matches any of the existing profiles"""
     for existing_case in adapter.cases():
@@ -150,19 +111,13 @@ def check_profile_duplicates(adapter: MongoAdapter, case_object: Case) -> Case:
             if not individual.get("profile"):
                 continue
 
-            for sample in case_object.individuals:
-                similarity = compare_profiles(sample.profile, individual["profile"])
+            for sample, profile in profiles.items():
+                similarity = compare_profiles(profile, individual["profile"])
                 if similarity >= settings.load_hard_threshold:
                     raise ProfileDuplicationError(
-                        f"Profile of sample {sample.ind_id} "
+                        f"Profile of sample {sample} "
                         f"matches existing profile {individual.get('ind_id')}"
                     )
-
-                elif similarity >= settings.load_soft_threshold:
-                    match = f"{existing_case['case_id']}.{individual['ind_id']}"
-                    sample.similar_samples.append(match)
-
-    return case_object
 
 
 def build_case_object(
@@ -171,7 +126,7 @@ def build_case_object(
     profile_path: Union[Path, str],
     vcf_path: Union[Path, str],
     vcf_sv_path: Union[Path, str] = None,
-) -> dict:
+) -> Case:
     """Build case document and insert into the database, return resulting document"""
 
     # Create case object prior to parsing VCF files
@@ -179,25 +134,40 @@ def build_case_object(
         case_id=case_id, profile_path=profile_path, vcf_path=vcf_path, vcf_sv_path=vcf_sv_path
     )
     # Parse MAF profiles from profile files and save in the case object
-    case_object: Case = parse_profiles(adapter=adapter, case_object=case_object)
-
+    profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
     # Check if profiles have any duplicates in the database
-    case_object: Case = check_profile_duplicates(adapter=adapter, case_object=case_object)
+    check_profile_duplicates(adapter=adapter, profiles=profiles)
+    # CHeck that SNV file has GQ field
+    check_vcf_gq_field(vcf_path=case_object.vcf_path)
+    # CHeck that SNV file doesnt have SV variants
+    check_snv_variant_types(vcf_path=case_object.vcf_path)
+    for sample_index, (sample, profile) in enumerate(profiles.items()):
+        individual = Individual(
+            ind_id=sample,
+            case_id=case_id,
+            ind_index=sample_index,
+            profile=profile,
+        )
+        case_object.individuals.append(individual)
+        case_object.inds[sample] = individual
+        if not case_object.vcf_sv_path:
+            continue
+        case_object.sv_individuals.append(individual)
+        case_object.sv_inds[sample] = individual
 
-    if vcf_path:
-        case_object: Case = parse_snv_vcf(vcf_path=vcf_path, case_object=case_object)
+    case_object.nr_variants = get_vcf_variant_count(vcf_path=case_object.vcf_path)
+    if case_object.vcf_sv_path:
+        case_object.nr_sv_variants = get_vcf_variant_count(vcf_path=case_object.vcf_sv_path)
 
-    if vcf_sv_path:
-        case_object: Case = parse_sv_vcf(vcf_path=vcf_sv_path, case_object=case_object)
     adapter.add_case(case_object.dict(by_alias=True, exclude={"id"}))
 
-    return adapter.case({"case_id": case_id})
+    return Case(**adapter.case({"case_id": case_id}))
 
 
-def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict) -> None:
+def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: Case) -> None:
     """Build variant documents and bulk insert them into database"""
     variants = []
-    for variant in VCF(vcf_file):
+    for variant in VCF(vcf_file, threads=settings.cyvcf_threads):
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
@@ -208,7 +178,7 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
         found_homozygote = 0
         found_hemizygote = 0
 
-        for ind_obj in case_obj["individuals"]:
+        for ind_obj in case_obj.individuals:
             ind_id = ind_obj["ind_id"]
             ind_pos = ind_obj["ind_index"]
             gq = int(variant.gt_quals[ind_pos])
@@ -238,7 +208,7 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
                     end_chrom=coordinates["end_chrom"],
                     sv_type=coordinates["sv_type"],
                     sv_len=coordinates["sv_length"],
-                    case_id=case_obj["case_id"],
+                    case_id=case_obj.case_id,
                     homozygote=found_homozygote,
                     hemizygote=found_hemizygote,
                     is_sv=False,
@@ -248,10 +218,10 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
     adapter.add_variants(variants=variants)
 
 
-def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: dict) -> None:
+def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: Case) -> None:
     """Build sv_variant documents and insert them into database on the fly, one at a time"""
 
-    for variant in VCF(vcf_file):
+    for variant in VCF(vcf_file, threads=settings.cyvcf_threads):
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
@@ -269,7 +239,7 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
             end_chrom=coordinates["end_chrom"],
             sv_type=coordinates["sv_type"],
             sv_len=coordinates["sv_length"],
-            case_id=case_obj["case_id"],
+            case_id=case_obj.case_id,
             homozygote=0,
             hemizygote=0,
             is_sv=True,
@@ -280,17 +250,17 @@ def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_o
 
 def load_case_variants(
     adapter: MongoAdapter,
-    case_obj: dict,
+    case_obj: Case,
 ) -> None:
     """Load case variants into loqusdb"""
 
     try:
-        vcf_path = case_obj.get("vcf_path")
+        vcf_path = case_obj.vcf_path
         if vcf_path:
             insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
-        vcf_sv_path = case_obj.get("vcf_sv_path")
+        vcf_sv_path = case_obj.vcf_sv_path
         if vcf_sv_path:
             insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
     except Exception as e:
-        delete(adapter=adapter, case_obj=case_obj, genome_build=settings.genome_build)
+        delete(adapter=adapter, case_obj=case_obj.dict(), genome_build=settings.genome_build)
         raise

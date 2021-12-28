@@ -141,15 +141,15 @@ def load_case(
         )
 
     try:
-        case_result: dict = build_case_object(
+        case_object: Case = build_case_object(
             case_id=case_id,
             vcf_path=snv_file,
             vcf_sv_path=sv_file,
             profile_path=profile_file,
             adapter=db,
         )
-        load_case_variants(adapter=db, case_obj=case_result)
-        return JSONResponse(jsonable_encoder(Case(**case_result)), status_code=status.HTTP_200_OK)
+        load_case_variants(adapter=db, case_obj=case_object)
+        return JSONResponse(jsonable_encoder(case_object), status_code=status.HTTP_200_OK)
     except Exception as e:
         LOG.error(e)
         return JSONResponse(
