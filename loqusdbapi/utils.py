@@ -167,7 +167,7 @@ def build_case_object(
 def insert_snv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
     """Build variant documents and bulk insert them into database"""
     variants = []
-    for variant in VCF(case_obj.vcf_file, threads=settings.cyvcf_threads):
+    for variant in VCF(case_obj.vcf_path, threads=settings.cyvcf_threads):
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
