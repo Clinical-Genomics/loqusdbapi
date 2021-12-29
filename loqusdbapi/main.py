@@ -6,7 +6,7 @@ Small loqusdb api
 import logging
 import loqusdb
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -121,7 +121,7 @@ def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Error {e.__class__}: {e}; Case may be partially deleted",
+            detail=f"Error {e.__class__.__name__}: {e}; Case may be partially deleted",
         )
 
 
@@ -160,12 +160,12 @@ def load_case(
     except LoqusdbAPIError as e:
         LOG.error(e)
         raise HTTPException(
-            detail=f"Exception {e.__class__}: {e.message}",
+            detail=f"Exception {e.__class__.__name__}: {e.message}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:
         LOG.error(e)
         raise HTTPException(
-            detail=f"Exception {e.__class__} {e}",
+            detail=f"Exception {e.__class__.__name__} {e}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
