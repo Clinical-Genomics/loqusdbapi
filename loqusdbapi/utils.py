@@ -81,17 +81,20 @@ def get_profiles(adapter: MongoAdapter, vcf_file: str) -> Dict[str, str]:
 def check_vcf_gq_field(
     vcf_path: Union[Path, str],
 ) -> None:
+    """Check vcf file for GQ field"""
     vcf_file = VCF(vcf_path, threads=settings.cyvcf_threads)
     if not vcf_file.contains("GQ"):
         raise VCFParserError(f"GQ not found in {vcf_path}")
 
 
 def get_vcf_variant_count(vcf_path: Union[Path, str]) -> int:
+    """Count total variants in vcf file"""
     vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
     return sum(1 for _ in vcf)
 
 
 def check_snv_variant_types(vcf_path: Union[Path, str]) -> None:
+    """Check that the SNV file does not include SVs"""
     snv_vcf = VCF(vcf_path, threads=settings.cyvcf_threads)
     for variant in snv_vcf:
         if variant.var_type not in ["sv", "cnv"]:
