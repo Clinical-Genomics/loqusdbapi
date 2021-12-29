@@ -119,7 +119,10 @@ def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
         delete(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
         return JSONResponse(f"Case {case_id} had been deleted", status_code=status.HTTP_200_OK)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error {e.__class__}: {e}; Case may be partially deleted",
+        )
 
 
 @app.post("/cases/{case_id}", response_model=Case)
