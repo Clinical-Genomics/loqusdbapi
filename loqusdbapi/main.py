@@ -16,6 +16,7 @@ from starlette.responses import JSONResponse
 
 from loqusdb.plugins.mongo.adapter import MongoAdapter
 from loqusdb.utils.delete import delete
+from loqusdbapi.exceptions import LoqusdbAPIError
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
 from loqusdbapi.utils import build_case_object, load_case_variants
@@ -150,9 +151,15 @@ def load_case(
         )
         load_case_variants(adapter=db, case_obj=case_object)
         return JSONResponse(jsonable_encoder(case_object), status_code=status.HTTP_200_OK)
+    except LoqusdbAPIError as e:
+        LOG.error(e)
+        raise HTTPException(
+            detail=f"Exception {e}: {e.message}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
     except Exception as e:
         LOG.error(e)
         raise HTTPException(
-            detail=f"Exception: {e}",
+            detail=f"Exception {e}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )

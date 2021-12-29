@@ -180,8 +180,7 @@ def insert_snv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
 
         for ind_obj in case_obj.individuals:
             ind_pos = ind_obj["ind_index"]
-            gq = int(variant.gt_quals[ind_pos])
-            if gq < settings.load_gq_threshold:
+            if int(variant.gt_quals[ind_pos]) < settings.load_gq_threshold:
                 continue
             genotype = GENOTYPE_MAP[variant.gt_types[ind_pos]]
 
@@ -259,5 +258,6 @@ def load_case_variants(
             return
         insert_sv_variants(adapter=adapter, case_obj=case_obj)
     except Exception as e:
+        LOG.error(f"{e}")
         delete(adapter=adapter, case_obj=case_obj.dict(), genome_build=settings.genome_build)
         raise
