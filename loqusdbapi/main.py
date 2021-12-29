@@ -115,8 +115,11 @@ def delete_case(case_id: str, db: MongoAdapter = Depends(database)):
     existing_case = db.case({"case_id": case_id})
     if not existing_case:
         return JSONResponse(f"Case {case_id} does not exist", status_code=status.HTTP_404_NOT_FOUND)
-    delete(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
-    return JSONResponse(f"Case {case_id} had been deleted", status_code=status.HTTP_200_OK)
+    try:
+        delete(adapter=db, case_obj=existing_case, genome_build=settings.genome_build)
+        return JSONResponse(f"Case {case_id} had been deleted", status_code=status.HTTP_200_OK)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}")
 
 
 @app.post("/cases/{case_id}", response_model=Case)
