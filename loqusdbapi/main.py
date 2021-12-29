@@ -19,7 +19,7 @@ from loqusdb.utils.delete import delete
 from loqusdbapi.exceptions import LoqusdbAPIError
 from loqusdbapi.models import Case, Variant, StructuralVariant, Cases
 from loqusdbapi.settings import settings
-from loqusdbapi.utils import build_case_object, load_case_variants
+from loqusdbapi.utils import build_case_object, insert_case_variants
 
 LOG = logging.getLogger("__name__")
 
@@ -149,7 +149,7 @@ def load_case(
             profile_path=profile_file,
             adapter=db,
         )
-        load_case_variants(adapter=db, case_obj=case_object)
+        insert_case_variants(adapter=db, case_obj=case_object)
         return JSONResponse(jsonable_encoder(case_object), status_code=status.HTTP_200_OK)
     except LoqusdbAPIError as e:
         LOG.error(e)

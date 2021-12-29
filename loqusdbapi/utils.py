@@ -187,37 +187,38 @@ def insert_snv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
             ind_pos = ind_obj["ind_index"]
             if int(variant.gt_quals[ind_pos]) < settings.load_gq_threshold:
                 continue
+
             genotype = GENOTYPE_MAP[variant.gt_types[ind_pos]]
+            if genotype not in ["het", "hom_alt"]:
+                continue
 
-            if genotype in ["het", "hom_alt"]:
+            if genotype == "hom_alt":
+                found_homozygote = 1
 
-                if (
-                    chrom in ["X", "Y"]
-                    and ind_obj["sex"] == 1
-                    and not check_par(chrom, pos, genome_build=settings.genome_build)
-                ):
-                    found_hemizygote = 1
+            if (
+                chrom in ["X", "Y"]
+                and ind_obj["sex"] == 1
+                and not check_par(chrom, pos, genome_build=settings.genome_build)
+            ):
+                found_hemizygote = 1
 
-                if genotype == "hom_alt":
-                    found_homozygote = 1
-
-                variant_obj = Variant(
-                    variant_id=variant_id,
-                    chrom=chrom,
-                    pos=pos,
-                    end=coordinates["end"],
-                    ref=ref,
-                    alt=alt,
-                    end_chrom=coordinates["end_chrom"],
-                    sv_type=coordinates["sv_type"],
-                    sv_len=coordinates["sv_length"],
-                    case_id=case_obj.case_id,
-                    homozygote=found_homozygote,
-                    hemizygote=found_hemizygote,
-                    is_sv=False,
-                    id_column=variant.ID,
-                )
-                variants.append(variant_obj)
+            variant_obj = Variant(
+                variant_id=variant_id,
+                chrom=chrom,
+                pos=pos,
+                end=coordinates["end"],
+                ref=ref,
+                alt=alt,
+                end_chrom=coordinates["end_chrom"],
+                sv_type=coordinates["sv_type"],
+                sv_len=coordinates["sv_length"],
+                case_id=case_obj.case_id,
+                homozygote=found_homozygote,
+                hemizygote=found_hemizygote,
+                is_sv=False,
+                id_column=variant.ID,
+            )
+            variants.append(variant_obj)
     adapter.add_variants(variants=variants)
 
 
@@ -251,7 +252,7 @@ def insert_sv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
         adapter.add_structural_variant(variant=variant_obj, max_window=settings.load_sv_window)
 
 
-def load_case_variants(
+def insert_case_variants(
     adapter: MongoAdapter,
     case_obj: Case,
 ) -> None:
