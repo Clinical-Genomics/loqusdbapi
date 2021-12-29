@@ -154,12 +154,12 @@ def load_case(
     except LoqusdbAPIError as e:
         LOG.error(e)
         raise HTTPException(
-            detail=f"Exception {e}: {e.message}",
+            detail=f"Exception {e.__class__}: {e.message}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:
         LOG.error(e)
         raise HTTPException(
-            detail=f"Exception {e}",
+            detail=f"Exception {e.__class__} {e}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )

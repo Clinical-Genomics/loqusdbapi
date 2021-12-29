@@ -129,35 +129,40 @@ def build_case_object(
 ) -> Case:
     """Build case document and insert into the database, return resulting document"""
 
-    # Create case object prior to parsing VCF files
-    case_object: Case = Case(
-        case_id=case_id, profile_path=profile_path, vcf_path=vcf_path, vcf_sv_path=vcf_sv_path
-    )
     # Parse MAF profiles from profile files and save in the case object
-    profiles: dict = get_profiles(adapter=adapter, vcf_file=case_object.profile_path)
+    profiles: dict = get_profiles(adapter=adapter, vcf_file=profile_path)
     # Check if profiles have any duplicates in the database
     check_profile_duplicates(adapter=adapter, profiles=profiles)
     # CHeck that SNV file has GQ field
-    check_vcf_gq_field(vcf_path=case_object.vcf_path)
+    check_vcf_gq_field(vcf_path=vcf_path)
     # CHeck that SNV file doesnt have SV variants
-    check_snv_variant_types(vcf_path=case_object.vcf_path)
-    for sample_index, (sample, profile) in enumerate(profiles.items()):
-        individual = Individual(
+    check_snv_variant_types(vcf_path=vcf_path)
+    individuals = {
+        sample: Individual(
             ind_id=sample,
             case_id=case_id,
             ind_index=sample_index,
             profile=profile,
         )
-        case_object.individuals.append(individual)
-        case_object.inds[sample] = individual
-        if not case_object.vcf_sv_path:
-            continue
-        case_object.sv_individuals.append(individual)
-        case_object.sv_inds[sample] = individual
+        for sample_index, (sample, profile) in enumerate(profiles.items())
+    }
+    individuals_list: List = list(individuals.values())
+    case_object = Case(
+        case_id=case_id,
+        profile_path=profile_path,
+        vcf_path=vcf_path,
+        vcf_sv_path=vcf_sv_path,
+        nr_sv_variants=0,
+        nr_variants=get_vcf_variant_count(vcf_path=vcf_path),
+        individuals=individuals_list,
+        inds=individuals,
+        id=case_id,
+    )
 
-    case_object.nr_variants = get_vcf_variant_count(vcf_path=case_object.vcf_path)
-    if case_object.vcf_sv_path:
-        case_object.nr_sv_variants = get_vcf_variant_count(vcf_path=case_object.vcf_sv_path)
+    if vcf_sv_path:
+        case_object.nr_sv_variants = get_vcf_variant_count(vcf_path=vcf_sv_path)
+        case_object.sv_individuals = individuals_list
+        case_object.sv_inds = individuals
 
     adapter.add_case(case_object.dict(by_alias=True, exclude={"id"}))
 
