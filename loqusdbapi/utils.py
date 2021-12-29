@@ -164,10 +164,10 @@ def build_case_object(
     return Case(**adapter.case({"case_id": case_id}))
 
 
-def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: Case) -> None:
+def insert_snv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
     """Build variant documents and bulk insert them into database"""
     variants = []
-    for variant in VCF(vcf_file, threads=settings.cyvcf_threads):
+    for variant in VCF(case_obj.vcf_file, threads=settings.cyvcf_threads):
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
@@ -179,7 +179,6 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
         found_hemizygote = 0
 
         for ind_obj in case_obj.individuals:
-            ind_id = ind_obj["ind_id"]
             ind_pos = ind_obj["ind_index"]
             gq = int(variant.gt_quals[ind_pos])
             if gq < settings.load_gq_threshold:
@@ -218,10 +217,10 @@ def insert_snv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_
     adapter.add_variants(variants=variants)
 
 
-def insert_sv_variants(adapter: MongoAdapter, vcf_file: Union[Path, str], case_obj: Case) -> None:
+def insert_sv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
     """Build sv_variant documents and insert them into database on the fly, one at a time"""
 
-    for variant in VCF(vcf_file, threads=settings.cyvcf_threads):
+    for variant in VCF(case_obj.vcf_sv_path, threads=settings.cyvcf_threads):
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
@@ -255,12 +254,10 @@ def load_case_variants(
     """Load case variants into loqusdb"""
 
     try:
-        vcf_path = case_obj.vcf_path
-        if vcf_path:
-            insert_snv_variants(adapter=adapter, vcf_file=vcf_path, case_obj=case_obj)
-        vcf_sv_path = case_obj.vcf_sv_path
-        if vcf_sv_path:
-            insert_sv_variants(adapter=adapter, vcf_file=vcf_sv_path, case_obj=case_obj)
+        insert_snv_variants(adapter=adapter, case_obj=case_obj)
+        if not case_obj.vcf_sv_path:
+            return
+        insert_sv_variants(adapter=adapter, case_obj=case_obj)
     except Exception as e:
         delete(adapter=adapter, case_obj=case_obj.dict(), genome_build=settings.genome_build)
         raise

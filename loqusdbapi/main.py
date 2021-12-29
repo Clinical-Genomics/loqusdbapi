@@ -135,8 +135,8 @@ def load_case(
         or not Path(snv_file).exists()
         or not Path(profile_file).exists()
     ):
-        return JSONResponse(
-            "Input file path does not exist",
+        raise HTTPException(
+            detail="Input file path does not exist",
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
         )
 
@@ -152,7 +152,7 @@ def load_case(
         return JSONResponse(jsonable_encoder(case_object), status_code=status.HTTP_200_OK)
     except Exception as e:
         LOG.error(e)
-        return JSONResponse(
-            f"Exception: {e}",
+        raise HTTPException(
+            detail=f"Exception: {e}",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
