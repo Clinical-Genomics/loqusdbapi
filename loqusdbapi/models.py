@@ -61,6 +61,7 @@ class Variant(BaseVariant):
     alt: str
     homozygote: int
     hemizygote: int
+    total: int
 
 
 class StructuralVariant(BaseVariant):
@@ -73,6 +74,7 @@ class StructuralVariant(BaseVariant):
     pos_left: int
     pos_right: int
     pos_sum: int
+    total: int
 
 
 class Cases(BaseModel):
