@@ -3,6 +3,19 @@ from typing import Optional, List, Union, Any
 
 from pydantic import BaseModel, validator, Field
 
+from bson.objectid import ObjectId as BsonObjectId
+
+class PydanticObjectId(BsonObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not isinstance(v, BsonObjectId):
+            raise TypeError('ObjectId required')
+        return str(v)
+
 class Individual(BaseModel):
     ind_id: str
     case_id: str
@@ -69,7 +82,7 @@ class Variant(BaseVariant):
 
 
 class StructuralVariant(BaseVariant):
-    id: Optional[Any] = Field(alias="_id")
+    id: Optional[BsonObjectId] = Field(alias="_id")
     end_chrom: str
     end_left: int
     end_right: int
