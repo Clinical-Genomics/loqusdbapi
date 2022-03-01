@@ -27,12 +27,6 @@ class Individual(BaseModel):
     profile: Optional[list] = []
     similar_samples: Optional[list] = []
 
-    @validator("id")
-    def id_to_str(cls, value):
-        if value:
-            return str(value)
-
-
 class Case(BaseModel):
     id: Optional[Any] = Field(alias="_id")
     case_id: str
