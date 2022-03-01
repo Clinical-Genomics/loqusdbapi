@@ -65,6 +65,7 @@ class Variant(BaseVariant):
 
 
 class StructuralVariant(BaseVariant):
+    id: Optional[Any] = Field(alias="_id")
     end_chrom: str
     end_left: int
     end_right: int
