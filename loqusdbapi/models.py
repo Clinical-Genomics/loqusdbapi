@@ -88,6 +88,9 @@ class StructuralVariant(BaseVariant):
     pos_sum: int
     total: int
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class Cases(BaseModel):
     nr_cases_snvs: Optional[int]
