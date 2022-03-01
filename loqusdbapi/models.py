@@ -48,7 +48,7 @@ class Case(BaseModel):
 
 
 class BaseVariant(BaseModel):
-    id: str = Field(alias="_id")
+    id: Optional[Any] = Field(alias="_id")
     chrom: str
     observations: int
     families: List[str] = []
@@ -65,6 +65,7 @@ class Variant(BaseVariant):
 
 
 class StructuralVariant(BaseVariant):
+    id: ObjectId = Field(alias="_id")
     end_chrom: str
     end_left: int
     end_right: int
