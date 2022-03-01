@@ -3,6 +3,7 @@ from typing import Optional, List, Union, Any
 
 from pydantic import BaseModel, validator, Field
 
+from bson.objectid import ObjectId
 
 class Individual(BaseModel):
     ind_id: str
@@ -14,7 +15,6 @@ class Individual(BaseModel):
     ind_index: Optional[int]
     profile: Optional[list] = []
     similar_samples: Optional[list] = []
-
 
 class Case(BaseModel):
     id: Optional[Any] = Field(alias="_id")
@@ -48,13 +48,13 @@ class Case(BaseModel):
 
 
 class BaseVariant(BaseModel):
-    id: str = Field(alias="_id")
     chrom: str
     observations: int
     families: List[str] = []
 
 
 class Variant(BaseVariant):
+    id: str = Field(alias="_id")
     start: int
     end: int
     ref: str
@@ -65,6 +65,7 @@ class Variant(BaseVariant):
 
 
 class StructuralVariant(BaseVariant):
+    id: Optional[Any] = Field(alias="_id")
     end_chrom: str
     end_left: int
     end_right: int
@@ -75,6 +76,15 @@ class StructuralVariant(BaseVariant):
     pos_right: int
     pos_sum: int
     total: int
+
+    @validator("id")
+    def id_to_str(cls, value):
+        if value:
+            return str(value)
+
+    class Config:
+        arbitrary_types_allowed = True
+        allow_population_by_field_name = True
 
 
 class Cases(BaseModel):
