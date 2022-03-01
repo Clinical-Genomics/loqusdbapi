@@ -48,13 +48,13 @@ class Case(BaseModel):
 
 
 class BaseVariant(BaseModel):
-    id: Optional[Any] = Field(alias="_id")
     chrom: str
     observations: int
     families: List[str] = []
 
 
 class Variant(BaseVariant):
+    id: str = Field(alias="_id")
     start: int
     end: int
     ref: str
