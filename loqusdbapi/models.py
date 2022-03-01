@@ -65,7 +65,7 @@ class Variant(BaseVariant):
 
 
 class StructuralVariant(BaseVariant):
-    id: str = Field(alias="_id")
+    id: Optional[Any] = Field(alias="_id")
     end_chrom: str
     end_left: int
     end_right: int
@@ -81,6 +81,10 @@ class StructuralVariant(BaseVariant):
     def id_to_str(cls, value):
         if value:
             return str(value)
+
+    class Config:
+        arbitrary_types_allowed = True
+        allow_population_by_field_name = True
 
 
 class Cases(BaseModel):
