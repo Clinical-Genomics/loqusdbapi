@@ -3,8 +3,6 @@ from typing import Optional, List, Union, Any
 
 from pydantic import BaseModel, validator, Field
 
-from bson
-
 class Individual(BaseModel):
     ind_id: str
     case_id: str
