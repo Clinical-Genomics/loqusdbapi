@@ -3,6 +3,7 @@ from typing import Optional, List, Union, Any
 
 from pydantic import BaseModel, validator, Field
 
+from bson
 
 class Individual(BaseModel):
     ind_id: str
@@ -14,6 +15,11 @@ class Individual(BaseModel):
     ind_index: Optional[int]
     profile: Optional[list] = []
     similar_samples: Optional[list] = []
+
+    @validator("id")
+    def id_to_str(cls, value):
+        if value:
+            return str(value)
 
 
 class Case(BaseModel):
