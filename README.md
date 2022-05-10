@@ -19,6 +19,13 @@ etc, use the environmental variable `URI`.
 If only testing the app use the `docker-compose`-solution below.
 More information about setup should be fairly easy to understand by looking at `docker-compose.yml`.
 
+### poetry
+
+[Poetry][poetry] is the friendliest and most intuitive package manager for python.
+
+1. `poetry install`
+1. `uvicorn loqusdbapi.main:app --reload`
+
 ### pip
 To use with `pip` the easy solution is to install [micropipenv][micropipenv] and generate a requirements file:
 
