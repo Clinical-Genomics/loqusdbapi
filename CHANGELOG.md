@@ -2,10 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.7]
+- Fix docker-compose file to mirror changes in Dockerfile (serve app via gunicorn)
+
 ## [0.1.3]
 ### Changed
 - Use mongo_adapter 0.3.3 in frozen requirements file
-
 
 ## [0.1.2]
 ### Changed
