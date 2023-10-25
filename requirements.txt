@@ -1,5 +1,5 @@
 pytest==5.4.3
-loqusdb==2.6.3
+loqusdb
 cyvcf2==0.30.12
 mongomock
 click==7.1.2
