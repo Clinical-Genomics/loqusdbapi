@@ -15,5 +15,6 @@ coverage.xml
 *,cover
 *.log
 .git
+.idea/
 poetry.lock
 pyproject.toml
