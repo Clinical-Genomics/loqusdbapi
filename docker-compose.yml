@@ -12,10 +12,10 @@ services:
       MODULE_NAME: "loqusdbapi.main"
 
   mongo:
-    image: mongo:7.0.2
+    image: mongo:7
 
   restore:
-    image: mongo:7.0.2
+    image: mongo:7
     volumes:
       - ./dump:/var/dump
     links:
