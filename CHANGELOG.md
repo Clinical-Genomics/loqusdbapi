@@ -2,9 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.1.10]
+## [0.1.11]
 ### Fixed
 -  For compliance with latest MongoDB versions update loqusdb version to >=2.7.3 in requirements
+
+## [0.1.10]
+### Fixed
+-  Introduce a "v" char before the numeric version tag that is pushed to Docker Hub prod when a new release is created
 
 ## [0.1.9]
 ### changed
