@@ -10,6 +10,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### changed
 - Unfreeze pymongo to support connections to new MongoDB software
 
+## [0.1.8]
+### Fixed
+- Fix PyYaml installation error
+
 ## [0.1.7]
 ### Fixed
 - Fix docker-compose file to mirror changes in Dockerfile (serve app via gunicorn)
