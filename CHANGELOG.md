@@ -2,14 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.2]
-### Changed
+## [0.1.10]
+### Fixed
+-  For compliance with latest MongoDB versions update loqusdb version to >=2.7.3 in requirements
+
+## [0.1.9]
+### changed
 - Unfreeze pymongo to support connections to new MongoDB software
 
 ## [0.1.8]
 ### Fixed
 - Fix PyYaml installation error
-- Unfreeze also loqusdb dependency
 
 ## [0.1.7]
 ### Fixed
