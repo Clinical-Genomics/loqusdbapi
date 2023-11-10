@@ -47,6 +47,9 @@ TRASH*
 .vagrant
 dev/
 
+# PyCharm
+.idea/
+
 # SublimeText: workspace files are user-specific
 *.sublime-workspace
 
