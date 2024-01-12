@@ -23,7 +23,6 @@ from loqusdbapi.utils import build_case_object, insert_case_variants
 
 LOG = logging.getLogger("__name__")
 
-
 app = FastAPI()
 
 
@@ -41,6 +40,8 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 
     return MongoAdapter(client, db_name=db_name)
 
+def mt_chrom_baseline():
+
 
 @app.get("/")
 def read_root():
@@ -49,10 +50,17 @@ def read_root():
         "loqusdb_version": loqusdb.__version__,
     }
 
+def get_mt_chromosome(mt_chrom: str) -> str:
+    """Getting right MT chromosome, according to the query and the genome build used in the app."""
+    if settings.genome_build == "GRCh38" and mt_chrom == "MT":
+        return "M"
+    return mt_chrom
 
 @app.get("/variants/{variant_id}", response_model=Variant)
 def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
-    variant = db.get_variant({"_id": variant_id})
+    variant_coordinates : List[str] = variant_id.split("_")
+    variant_coordinates[0] : str = get_mt_chromosome(variant_coordinates[0])
+    variant = db.get_variant({"_id": "_".join(variant_coordinates)})
     if not variant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found"
@@ -72,8 +80,8 @@ def read_sv(
 ):
     structural_variant = db.get_structural_variant(
         {
-            "chrom": chrom,
-            "end_chrom": end_chrom or chrom,
+            "chrom": get_mt_chromosome(chrom),
+            "end_chrom": get_mt_chromosome(end_chrom) or get_mt_chromosome(chrom),
             "sv_type": sv_type,
             "pos": pos,
             "end": end,
