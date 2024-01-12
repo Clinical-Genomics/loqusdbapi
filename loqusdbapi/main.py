@@ -47,16 +47,16 @@ def read_root():
         "loqusdb_version": loqusdb.__version__,
     }
 
-def get_mt_chromosome(mt_chrom: Optional[str]) -> Optional[str]:
+def set_chromosome(chrom: Optional[str]) -> Optional[str]:
     """Getting right MT chromosome, according to the query and the genome build used in the app."""
-    if settings.genome_build == "GRCh38" and mt_chrom == "MT":
+    if settings.genome_build == "GRCh38" and chrom == "MT":
         return "M"
-    return mt_chrom
+    return chrom
 
 @app.get("/variants/{variant_id}", response_model=Variant)
 def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
     variant_coordinates : List[str] = variant_id.split("_")
-    variant_coordinates[0] : str = get_mt_chromosome(variant_coordinates[0])
+    variant_coordinates[0] : str = set_chromosome(variant_coordinates[0])
     variant = db.get_variant({"_id": "_".join(variant_coordinates)})
     if not variant:
         raise HTTPException(
@@ -77,8 +77,8 @@ def read_sv(
 ):
     structural_variant = db.get_structural_variant(
         {
-            "chrom": get_mt_chromosome(chrom),
-            "end_chrom": get_mt_chromosome(end_chrom) or get_mt_chromosome(chrom),
+            "chrom": set_chromosome(chrom),
+            "end_chrom": set_chromosome(end_chrom) or set_chromosome(chrom),
             "sv_type": sv_type,
             "pos": pos,
             "end": end,
