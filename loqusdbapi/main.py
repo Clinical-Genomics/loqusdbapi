@@ -6,7 +6,7 @@ Small loqusdb api
 import logging
 import loqusdb
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -40,9 +40,6 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 
     return MongoAdapter(client, db_name=db_name)
 
-def mt_chrom_baseline():
-
-
 @app.get("/")
 def read_root():
     return {
@@ -50,7 +47,7 @@ def read_root():
         "loqusdb_version": loqusdb.__version__,
     }
 
-def get_mt_chromosome(mt_chrom: str) -> str:
+def get_mt_chromosome(mt_chrom: Optional[str]) -> Optional[str]:
     """Getting right MT chromosome, according to the query and the genome build used in the app."""
     if settings.genome_build == "GRCh38" and mt_chrom == "MT":
         return "M"
