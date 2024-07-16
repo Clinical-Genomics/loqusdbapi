@@ -2,15 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.1.14]
+## [0.1.13]
 ### Changed
 - Updated issue template
 ### Fixed
 - Update to setuptools >= v.70 to address a security issue in the package_index module
-
-## [0.1.13]
-### Fixed
-- Fix chromosome name to "M" when user runs queries for "MT" variants on an database instance in build 38
 
 ## [0.1.12]
 ### Fixed
