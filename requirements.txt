@@ -1,5 +1,5 @@
 pytest==5.4.3
-loqusdb>=2.7.3
+loqusdb>=2.7.7
 cyvcf2==0.30.12
 mongomock
 click==7.1.2
@@ -8,7 +8,7 @@ numpy==1.21.4
 coloredlogs==14.0
 pyyaml>=5.4.1
 vcftoolbox==1.5
-setuptools
+setuptools>=70.0.0
 fastapi==0.61.2
 pydantic==1.7.2
 starlette==0.13.6
