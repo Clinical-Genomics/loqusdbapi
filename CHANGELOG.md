@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated issue template
 ### Fixed
-- Update to setuptools >= v.70 to address a security issue in the package_index module
+- Update to setuptools >= v.70 to address a security issue in the `package_index` module
 
 ## [0.1.12]
 ### Fixed
