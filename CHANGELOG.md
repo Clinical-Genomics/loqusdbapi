@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [unreleased]
+### Added
+- MIT license
+
 ## [0.1.14]
 ### Fixed
 - Update to setuptools >= v.70 to address a security issue in the `package_index` module
