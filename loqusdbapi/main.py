@@ -41,6 +41,13 @@ def database(uri: str = None, db_name: str = None) -> MongoAdapter:
 
     return MongoAdapter(client, db_name=db_name)
 
+def normalise_chrom(value: str) -> str:
+    """
+    If it's required and missing, add chromosome prefix to a variant id or a chromosome..
+    """
+    if settings.chr_prefix and not value.startswith(settings.chr_prefix):
+        return f"{settings.chr_prefix}{value}"
+    return value
 
 @app.get("/")
 def read_root():
@@ -52,7 +59,7 @@ def read_root():
 
 @app.get("/variants/{variant_id}", response_model=Variant)
 def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
-    variant = db.get_variant({"_id": variant_id})
+    variant = db.get_variant({"_id": normalise_chrom(variant_id)})
     if not variant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found"
@@ -72,8 +79,8 @@ def read_sv(
 ):
     structural_variant = db.get_structural_variant(
         {
-            "chrom": chrom,
-            "end_chrom": end_chrom or chrom,
+            "chrom": normalise_chrom(chrom),
+            "end_chrom": normalise_chrom(end_chrom) or normalise_chrom(chrom),
             "sv_type": sv_type,
             "pos": pos,
             "end": end,
