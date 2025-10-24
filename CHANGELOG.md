@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [unreleased]
 ### Added
 - MIT license
+### Fixed
+- Docker compose image build on Apple Silicon by forcing x86_64 platform
 - Allow searching variants with custom chromosome prefixes configurable via environment settings
 
 ## [0.1.14]
