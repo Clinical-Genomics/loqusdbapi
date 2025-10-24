@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [unreleased]
 ### Added
 - MIT license
+- Allow searching variants with custom chromosome prefixes configurable via environment settings
 
 ## [0.1.14]
 ### Fixed

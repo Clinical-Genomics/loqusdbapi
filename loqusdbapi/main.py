@@ -52,7 +52,7 @@ def read_root():
 
 @app.get("/variants/{variant_id}", response_model=Variant)
 def read_variant(variant_id: str, db: MongoAdapter = Depends(database)):
-    variant = db.get_variant({"_id": variant_id})
+    variant = db.get_variant({"_id": f"{settings.chr_prefix}{variant_id}"})
     if not variant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Variant {variant_id} not found"
@@ -72,8 +72,8 @@ def read_sv(
 ):
     structural_variant = db.get_structural_variant(
         {
-            "chrom": chrom,
-            "end_chrom": end_chrom or chrom,
+            "chrom": f"{settings.chr_prefix}{chrom}",
+            "end_chrom": f"{settings.chr_prefix}{end_chrom}" or f"{settings.chr_prefix}{chrom}",
             "sv_type": sv_type,
             "pos": pos,
             "end": end,
