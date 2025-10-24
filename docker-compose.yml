@@ -3,6 +3,7 @@ version: '2'
 services:
   loqusdbapi:
     build: .
+    platform: linux/amd64 # forces x86_64, avoids cyvcf2 ARM issues
     ports:
       - 9000:8000
     links:
