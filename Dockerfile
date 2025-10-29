@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.14-slim-bookworm
 
 ENV GUNICORN_WORKERS=1
 ENV GUNICORN_THREADS=1
@@ -23,8 +23,18 @@ RUN apt-get -y update
 RUN apt-get -y install build-essential python3-dev openssl autoconf automake make gcc perl zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev libncurses5-dev samtools
 
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt --no-cache-dir
+RUN pip install -r requirements.txt
 
+# Create a non-root user
+RUN groupadd --gid 1000 worker && useradd -g worker --uid 1000 --shell /usr/sbin/nologin --create-home worker
+
+# Copy current app code to app dir
+COPY --chown=root:root --chmod=755 . /home/worker/app
+
+# Switch to non-root user
+USER worker
+
+RUN pip install -r requirements.txt --no-cache-dir
 
 CMD gunicorn \
     --workers=$GUNICORN_WORKERS \
@@ -33,9 +43,8 @@ CMD gunicorn \
     --timeout=$GUNICORN_TIMEOUT \
     --proxy-protocol \
     --forwarded-allow-ips="10.0.2.100,127.0.0.1" \
-    --log-syslog \
     --access-logfile - \
     --error-logfile - \
-    --log-level="debug" \
+    --log-level="info" \
     --worker-class=uvicorn.workers.UvicornWorker \
     loqusdbapi.main:app
