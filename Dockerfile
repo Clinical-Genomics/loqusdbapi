@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.14-slim-bookworm
 
 ENV GUNICORN_WORKERS=1
 ENV GUNICORN_THREADS=1
