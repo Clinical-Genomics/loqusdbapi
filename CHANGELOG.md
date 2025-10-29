@@ -4,9 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [unreleased]
 ### Fixed
-- Tag master renamed to main (#64)
-- Update automation, adding docker provenance (#65)
-- Bump docker base image, relax requirement versions (#61)
+- Tag master renamed to main (#66)
+- Update automation, adding docker provenance (#66)
+- Bump docker base image, relax requirement versions (#66)
+- Fix some pydantic compatibility issues to relax version (#66)
+- Docker base image to use non-root user (#66)
 
 ### [0.1.17]
 ### Fixed

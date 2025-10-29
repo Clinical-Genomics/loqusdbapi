@@ -11,6 +11,7 @@ vcftoolbox
 setuptools>=70.0.0
 fastapi
 pydantic
+pydantic-settings
 starlette
 uvicorn[standard]
 bump2version
