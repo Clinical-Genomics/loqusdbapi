@@ -4,7 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [unreleased]
 ### Fixed
-- Relax requirement versions, tag master renamed to main (#64)
+- Tag master renamed to main (#64)
+- Update automation, adding docker provenance (#65)
+- Bump docker base image, relax requirement versions (#61)
 
 ### [0.1.17]
 ### Fixed
