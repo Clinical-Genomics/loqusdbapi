@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.21]
 ### Added
-- Automated tests for main module (#70)
+- Automated tests for main module (#71)
 
 ## [0.1.20]
 ### Added
