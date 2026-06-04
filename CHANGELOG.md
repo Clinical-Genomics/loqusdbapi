@@ -21,13 +21,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Chr prefixed searches (#59)
 
-## [0.1.17]
-### Added
-- Add MIT license (#54)
-
 ## [0.1.16]
 ### Fixed
 - Fix Docker composer on Apple ARM (#58)
+
+## [0.1.15]
+### Added
+- Add MIT license (#54)
 
 ## [0.1.14]
 ### Fixed
