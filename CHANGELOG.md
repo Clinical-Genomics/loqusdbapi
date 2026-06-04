@@ -4,10 +4,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [unreleased]
 ### Added
-- MIT license
+- Automated tests GitHub workflow (#69)
+
+## [0.1.18]
 ### Fixed
-- Docker compose image build on Apple Silicon by forcing x86_64 platform
-- Allow searching variants with custom chromosome prefixes configurable via environment settings
+- Fix #62, fix master to main name, relax requirements
+- Fix #65 - update automation
+- Fix #61 - image status should now be considerably improved
+- Fix pydantic v2 migration, add non-root docker user
+
+## [0.1.17]
+### Fixed
+- Chr prefixed searches (#59)
+
+## [0.1.16]
+### Fixed
+- Fix Docker composer on Apple ARM (#58)
 
 ## [0.1.14]
 ### Fixed
