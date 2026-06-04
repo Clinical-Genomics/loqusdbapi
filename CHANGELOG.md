@@ -2,28 +2,32 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [unreleased]
+## [0.1.20]
 ### Added
-- MIT license
 - Automated tests GitHub workflow (#69)
-### Fixed
-- Tag master renamed to main (#66)
-- Update automation, adding docker provenance (#66)
-- Bump docker base image, relax requirement versions (#66)
-- Fix some pydantic compatibility issues to relax version (#66)
-- Docker base image to use non-root user (#66)
 
-### [0.1.17]
+## [0.1.19]
 ### Fixed
-- Allow searching variants with custom chromosome prefixes configurable via environment settings
+- CHANGELOG history
+
+## [0.1.18]
+### Fixed
+- Fix #62, fix master to main name, relax requirements
+- Fix #65 - update automation
+- Fix #61 - image status should now be considerably improved
+- Fix pydantic v2 migration, add non-root docker user
+
+## [0.1.17]
+### Fixed
+- Chr prefixed searches (#59)
+
+## [0.1.17]
+### Added
+- Add MIT license (#54)
 
 ## [0.1.16]
 ### Fixed
-- Docker compose image build on Apple Silicon by forcing x86_64 platform
-
-## [0.1.15]
-### Added
-- MIT license
+- Fix Docker composer on Apple ARM (#58)
 
 ## [0.1.14]
 ### Fixed
