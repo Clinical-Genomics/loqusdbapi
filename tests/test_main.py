@@ -80,7 +80,6 @@ def test_read_sv_found(client: TestClient, mock_db: Any, sv_payload: dict) -> No
 def test_read_sv_not_found(client: TestClient, mock_db: Any) -> None:
     """Test 404 response when structural variant is not found."""
 
-    # DB returns nothing → triggers 404 path
     mock_db.get_structural_variant.return_value = None
 
     response = client.get(
@@ -102,9 +101,7 @@ def test_read_sv_not_found(client: TestClient, mock_db: Any) -> None:
 def test_read_cases(client: TestClient, mock_db: Any) -> None:
     """Test SNV and SV case counts are returned correctly."""
 
-    # Arrange: control DB outputs
     mock_db.nr_cases.side_effect = [10, 5]
-    # first call = SNVs, second call = SVs
 
     response = client.get("/cases")
 
@@ -180,23 +177,24 @@ def test_load_case_success(
     monkeypatch,
     case_object: dict,
 ) -> None:
-    """Test successful case load."""
+    """Test successful case load.
+    Mocks file existence checks, case object construction, and variant insertion
+    to isolate the endpoint from filesystem and database side effects.
+    Verifies that a valid request returns the expected case data.
+    """
 
     mock_db.case.return_value = None
 
-    # file existence always true
     def fake_exists(self: object) -> bool:
         return True
 
     monkeypatch.setattr(main.Path, "exists", fake_exists)
 
-    # build_case_object returns clean API contract
     def fake_build_case_object(**kwargs: Any) -> dict:
         return case_object
 
     monkeypatch.setattr(main, "build_case_object", fake_build_case_object)
 
-    # no-op insert
     def fake_insert_case_variants(**kwargs: Any) -> None:
         return None
 
