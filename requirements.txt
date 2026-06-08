@@ -22,4 +22,4 @@ aiofiles
 python-multipart
 python-dotenv
 python-bsonjs
-httpx
+httpx # used in tests
