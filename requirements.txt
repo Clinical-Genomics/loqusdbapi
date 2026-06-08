@@ -19,7 +19,6 @@ uvloop
 httptools
 gunicorn
 aiofiles
-pydantic-settings
 python-multipart
 python-dotenv
 python-bsonjs
