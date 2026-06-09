@@ -6,11 +6,20 @@ from fastapi.testclient import TestClient
 
 from loqusdbapi.main import app, database
 
+### Fixtures used in test_main ###
+
 
 @pytest.fixture
-def mock_db():
-    """Return a fake database adapter."""
-    return Mock()
+def mock_db(case_payload):
+    """Return a fake database adapter with default behavior."""
+
+    db = Mock()
+
+    db.cases.return_value = []
+    db.case.return_value = case_payload
+    db.add_case.return_value = None
+
+    return db
 
 
 @pytest.fixture
@@ -96,3 +105,22 @@ def case_object() -> dict:
         "nr_variants": 10,
         "nr_sv_variants": 2,
     }
+
+
+### Fixtures used in test_utils ###
+
+
+@pytest.fixture
+def vcf_path() -> str:
+    """Path to test VCF fixture used for profile extraction tests."""
+    return "tests/fixtures/643594.clinical.vcf.gz"
+
+
+@pytest.fixture
+def fake_compare_profiles():
+    """Return a function that simulates a low similarity profile comparison."""
+
+    def compare(profile1, profile2):
+        return 0.2
+
+    return compare

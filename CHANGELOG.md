@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.1.22]
+### Added
+- Tests for 5 utils functions (#72)
+
 ## [0.1.21]
 ### Added
 - Automated tests for main module (#71)
