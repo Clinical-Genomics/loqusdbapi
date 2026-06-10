@@ -180,7 +180,7 @@ def insert_snv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
         ref = variant.REF
         alt = variant.ALT[0]
 
-        coordinates = get_coords(variant)
+        coordinates = get_coords(variant=variant, keep_chr_prefix=settings.chr_prefix, genome_build=settings.genome_build)
         chrom = coordinates["chrom"]
         pos = coordinates["pos"]
         found_homozygote = 0
@@ -232,7 +232,7 @@ def insert_sv_variants(adapter: MongoAdapter, case_obj: Case) -> None:
         variant_id = get_variant_id(variant=variant)
         ref = variant.REF
         alt = variant.ALT[0]
-        coordinates = get_coords(variant)
+        coordinates = get_coords(variant=variant, keep_chr_prefix=settings.chr_prefix, genome_build=settings.genome_build)
         chrom = coordinates["chrom"]
         pos = coordinates["pos"]
 
