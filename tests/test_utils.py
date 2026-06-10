@@ -107,30 +107,27 @@ def test_check_profile_duplicates_ok(monkeypatch, fake_compare_profiles):
 
 def test_build_case_object(mock_db, vcf_path, profiles_vcf_path):
     """Test the variant that builds a case document and saves it into the database."""
-    global case_obj
     case_obj = build_case_object(
         adapter=mock_db, case_id="case123", vcf_path=vcf_path, profile_path=profiles_vcf_path
     )
     assert isinstance(case_obj, Case)
 
 
-def test_insert_snv_variants(mock_db, vcf_path):
+def test_insert_snv_variants(mock_db, case_obj):
     """Test the function that adds variant documents into the database.
     Invoking the function should not raise error.
     """
-    case_obj.vcf_path = vcf_path
     insert_snv_variants(adapter=mock_db, case_obj=case_obj)
 
 
-def test_insert_sv_variants(mock_db, sv_vcf_path):
+def test_insert_sv_variants(mock_db, case_obj):
     """Test the function that adds SV variant documents into the database.
     Invoking the function should not raise error.
     """
-    case_obj.vcf_sv_path = sv_vcf_path
     insert_sv_variants(adapter=mock_db, case_obj=case_obj)
 
 
-def test_insert_case_variants(mock_db, vcf_path, sv_vcf_path):
+def test_insert_case_variants(mock_db, case_obj):
     """Test the function that loads SNV and SV variants into the database.
     Invoking the function should not raise error.
     """

@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from loqusdbapi.main import app, database
+from loqusdbapi.models import Case
 
 ### Fixtures used in test_main ###
 
@@ -117,6 +118,25 @@ def case_object() -> dict:
 
 
 ### Fixtures used in test_utils ###
+
+
+@pytest.fixture
+def case_obj(profiles_vcf_path, vcf_path, sv_vcf_path) -> Case:
+    """Mocks a case object."""
+
+    return Case(
+        case_id="case123",
+        profile_path=profiles_vcf_path,
+        vcf_path=vcf_path,
+        vcf_sv_path=sv_vcf_path,
+        nr_variants=15,
+        nr_sv_variants=2,
+        individuals=[],
+        sv_individuals=[],
+        inds={},
+        sv_inds={},
+        id="case123",
+    )
 
 
 @pytest.fixture
