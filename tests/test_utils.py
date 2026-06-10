@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import loqusdbapi.utils as utils
+from loqusdbapi.models import Case
 from loqusdbapi.utils import (
     build_case_object,
     check_profile_duplicates,
@@ -8,6 +9,9 @@ from loqusdbapi.utils import (
     check_vcf_gq_field,
     get_profiles,
     get_vcf_variant_count,
+    insert_case_variants,
+    insert_snv_variants,
+    insert_sv_variants,
 )
 
 
@@ -22,16 +26,6 @@ def test_get_profiles_variant_found(mock_db, vcf_path):
     - genotypes are correctly translated using GENOTYPE_MAP logic
     - each sample receives the expected genotype entries
     """
-
-    mock_db.profile_variants.return_value = [
-        {
-            "_id": "7_124491972_C_A",
-            "chrom": "7",
-            "pos": 124491972,
-            "ref": "C",
-            "alt": "A",
-        }
-    ]
 
     # Act
     result = get_profiles(mock_db, vcf_path)
@@ -70,7 +64,7 @@ def test_get_vcf_variant_count(vcf_path):
     count = get_vcf_variant_count(vcf_path)
 
     assert isinstance(count, int)
-    assert count == 680
+    assert count == 15
 
 
 def test_check_snv_variant_types_ok(vcf_path):
@@ -109,3 +103,35 @@ def test_check_profile_duplicates_ok(monkeypatch, fake_compare_profiles):
     profiles = {"sample1": ["A", "A", "G", "G", "T"]}
 
     check_profile_duplicates(mock_db, profiles)
+
+
+def test_build_case_object(mock_db, vcf_path, profiles_vcf_path):
+    """Test the variant that builds a case document and saves it into the database."""
+    global case_obj
+    case_obj = build_case_object(
+        adapter=mock_db, case_id="case123", vcf_path=vcf_path, profile_path=profiles_vcf_path
+    )
+    assert isinstance(case_obj, Case)
+
+
+def test_insert_snv_variants(mock_db, vcf_path):
+    """Test the function that adds variant documents into the database.
+    Invoking the function should not raise error.
+    """
+    case_obj.vcf_path = vcf_path
+    insert_snv_variants(adapter=mock_db, case_obj=case_obj)
+
+
+def test_insert_sv_variants(mock_db, sv_vcf_path):
+    """Test the function that adds SV variant documents into the database.
+    Invoking the function should not raise error.
+    """
+    case_obj.vcf_sv_path = sv_vcf_path
+    insert_sv_variants(adapter=mock_db, case_obj=case_obj)
+
+
+def test_insert_case_variants(mock_db, vcf_path, sv_vcf_path):
+    """Test the function that loads SNV and SV variants into the database.
+    Invoking the function should not raise error.
+    """
+    insert_case_variants(adapter=mock_db, case_obj=case_obj)

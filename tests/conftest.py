@@ -18,6 +18,15 @@ def mock_db(case_payload):
     db.cases.return_value = []
     db.case.return_value = case_payload
     db.add_case.return_value = None
+    db.profile_variants.return_value = [
+        {
+            "_id": "7_124491972_C_A",
+            "chrom": "7",
+            "pos": 124491972,
+            "ref": "C",
+            "alt": "A",
+        }
+    ]
 
     return db
 
@@ -112,8 +121,20 @@ def case_object() -> dict:
 
 @pytest.fixture
 def vcf_path() -> str:
+    """Path to test VCF fixture used for VCF extraction in tests."""
+    return "tests/fixtures/test.vcf.gz"
+
+
+@pytest.fixture
+def sv_vcf_path() -> str:
+    """Path to test VCF fixture used for VCF extraction in tests."""
+    return "tests/fixtures/test.SV.vcf.gz"
+
+
+@pytest.fixture
+def profiles_vcf_path() -> str:
     """Path to test VCF fixture used for profile extraction tests."""
-    return "tests/fixtures/643594.clinical.vcf.gz"
+    return "tests/fixtures/profile_snv.vcf.gz"
 
 
 @pytest.fixture
