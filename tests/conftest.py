@@ -5,12 +5,31 @@ import pytest
 from fastapi.testclient import TestClient
 
 from loqusdbapi.main import app, database
+from loqusdbapi.models import Case
+
+### Fixtures used in test_main ###
 
 
 @pytest.fixture
-def mock_db():
-    """Return a fake database adapter."""
-    return Mock()
+def mock_db(case_payload):
+    """Return a fake database adapter with default behavior."""
+
+    db = Mock()
+
+    db.cases.return_value = []
+    db.case.return_value = case_payload
+    db.add_case.return_value = None
+    db.profile_variants.return_value = [
+        {
+            "_id": "7_124491972_C_A",
+            "chrom": "7",
+            "pos": 124491972,
+            "ref": "C",
+            "alt": "A",
+        }
+    ]
+
+    return db
 
 
 @pytest.fixture
@@ -96,3 +115,53 @@ def case_object() -> dict:
         "nr_variants": 10,
         "nr_sv_variants": 2,
     }
+
+
+### Fixtures used in test_utils ###
+
+
+@pytest.fixture
+def case_obj(profiles_vcf_path, vcf_path, sv_vcf_path) -> Case:
+    """Mocks a case object."""
+
+    return Case(
+        case_id="case123",
+        profile_path=profiles_vcf_path,
+        vcf_path=vcf_path,
+        vcf_sv_path=sv_vcf_path,
+        nr_variants=0,
+        nr_sv_variants=0,
+        individuals=[],
+        sv_individuals=[],
+        inds={},
+        sv_inds={},
+        id="case123",
+    )
+
+
+@pytest.fixture
+def vcf_path() -> str:
+    """Path to test VCF fixture used for VCF extraction in tests."""
+    return "tests/fixtures/test.vcf.gz"
+
+
+@pytest.fixture
+def sv_vcf_path() -> str:
+    """Path to test VCF fixture used for VCF extraction in tests."""
+    return "tests/fixtures/test.SV.vcf.gz"
+
+
+@pytest.fixture
+def profiles_vcf_path() -> str:
+    """Path to test VCF fixture used for profile extraction tests."""
+    return "tests/fixtures/profile_snv.vcf.gz"
+
+
+@pytest.fixture
+def fake_compare_profiles():
+    """Return a function that simulates a low similarity profile comparison."""
+
+    def compare(profile1, profile2):
+        return 0.2
+
+    return compare

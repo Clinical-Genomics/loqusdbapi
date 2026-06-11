@@ -1,20 +1,21 @@
 from pathlib import Path
-from typing import Optional, List, Union, Any
-
-from pydantic import BaseModel, validator, Field
+from typing import Any, List, Optional, Union
 
 from bson.objectid import ObjectId
+from pydantic import BaseModel, Field, validator
+
 
 class Individual(BaseModel):
     ind_id: str
     case_id: str
-    mother: Optional[str]
-    father: Optional[str]
+    mother: Optional[str] = None
+    father: Optional[str] = None
     sex: Optional[int] = 0
-    phenotype: Optional[str]
-    ind_index: Optional[int]
+    phenotype: Optional[str] = None
+    ind_index: Optional[int] = None
     profile: Optional[list] = []
     similar_samples: Optional[list] = []
+
 
 class Case(BaseModel):
     id: Optional[Any] = Field(alias="_id")
